@@ -33,11 +33,12 @@ function Login() {
         e.preventDefault()
 
         const { email, password, cpassword } = user;
-        Axios.post('http://localhost:9000/user_lg', {
+        Axios.post('/api/user_lg', {
             email, password
         }).then((response) => {
             console.log(response)
             if (response.status === 202) {
+                setCred(email, password)
                 return navigate("/user/log/otp")
             }
         }).catch(err => alert(err.response.data.message))

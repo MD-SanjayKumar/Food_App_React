@@ -19,8 +19,19 @@ app.use(session({
     secret: 'conda',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: null }
+    // cookie: { maxAge: null }
 }));
+
+// app.use(session({
+//     secret: 'conda',
+//     resave: true,
+//     saveUninitialized: false,
+//     cookie: {
+//       path: '/',
+//       maxAge: null,
+//       httpOnly: true,
+//     }
+//   }))
 
 const conn = mongoose.connect('mongodb://127.0.0.1:27017/myfood');
 
@@ -94,6 +105,10 @@ const restaurant_model = mongoose.model('restaurent_data', restaurantSchema)
 
 const menuSchema = new mongoose.Schema(
     {
+        rid: {
+            type: String,
+            require: true,
+        },
         food_name: {
             type: String,
             require: true,
@@ -128,7 +143,7 @@ const menu_model = mongoose.model('menu_data', menuSchema)
 const server = http.createServer(app)
 app.use(cors())
 
-app.get("/", (req, res) => {
+app.get("/api/", (req, res) => {
     res.send("server running...");
 })
 
@@ -162,7 +177,7 @@ const transporter = nodemailer.createTransport({
 
 let mailid, encryptedpass, uname, uphone;
 
-app.post("/user_reg", async (req, res) => {
+app.post("/api/user_reg", async (req, res) => {
     var { email, password, cpassword, name, phone } = req.body;
     var encryptedPwd = Crypto.AES.encrypt(password, GLOBAL_PASS).toString();
     mailid = email;
@@ -180,11 +195,11 @@ app.post("/user_reg", async (req, res) => {
         } else {
             var _otp = Math.random();
             _otp = _otp * 1000000;
-            otp = parseInt(_otp);
+            req.session.OTP = parseInt(_otp);
             var mailOptions = {
                 to: mailid,
                 subject: "OTP FOR SIGNUP",
-                html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otp + "</h1>" // html body
+                html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + req.session.OTP + "</h1>" // html body
             };
         
             transporter.sendMail(mailOptions, function (error, info) {
@@ -201,8 +216,7 @@ app.post("/user_reg", async (req, res) => {
     }
 })
 
-app.post("/user_lg", async (req, res) => {
-    req.session.usr = "ADMIN"
+app.post("/api/user_lg", async (req, res) => {
     console.log(req.session)
     let { email, password } = req.body;
     let usr_pwd = password;
@@ -220,16 +234,16 @@ app.post("/user_lg", async (req, res) => {
             var decryptedPwd = Crypto.AES.decrypt(pswd.trim().toString(), GLOBAL_PASS).toString();
             var decrypt = decryptedPwd.toString(Crypto.enc.Utf8);
             if (value.email == email && decrypt == encrp) {
-                // res.redirect('/login_otp');
+                // res.redirect('/api/login_otp');
                 var _otp = Math.random();
                 _otp = _otp * 1000000;
-                req.session.otp = parseInt(_otp);
+                req.session.OTP = parseInt(_otp);
                 var mailOptions = {
                     to: mailid,
                     subject: "OTP FOR SIGNIN",
-                    html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + req.session.otp + "</h1>"
+                    html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + req.session.OTP + "</h1>"
                 };
-                console.log(req.session);
+                console.log("login:",req.session);
 
                 transporter.sendMail(mailOptions, function (error, info) {
                     if (error) {
@@ -252,7 +266,7 @@ app.post("/user_lg", async (req, res) => {
     }
 })
 
-app.post('/verify', function (req, res) {
+app.post('/api/verify', function (req, res) {
     const { otp } = req.body;
     console.log(otp)
     var obj = {
@@ -261,18 +275,19 @@ app.post('/verify', function (req, res) {
         name: uname,
         phone: uphone
     };
-    if (parseInt(otp) == otp) {
+    if (req.session.OTP === otp) {
         user_model.create(obj);
-        res.status(201).json({ message: "Account created successfully." });
+        res.status(202).json({ message: "Account created successfully." });
     }
     else {
-        res.status(405).json({ message: "Incorrect OTP." });
+        res.status(406).json({ message: "Incorrect OTP." });
     }
 });
 
-app.post('/log_verify', function (req, res) {
+app.post('/api/log_verify', function (req, res) {
     const { otp } = req.body;
-    if (otp === req.session.otp) {
+    console.log("verify:",req.session)
+    if (otp == req.session.OTP) {
         res.status(202).json({ message: "Login successful." });
     }
     else {
@@ -280,7 +295,7 @@ app.post('/log_verify', function (req, res) {
     }
 });
 
-// app.get('/resend', function (req, res) {
+// app.get('/api/resend', function (req, res) {
 //     var _otp = Math.random();
 //     _otp = _otp * 1000000;
 //     otp = parseInt(_otp);
@@ -299,14 +314,14 @@ app.post('/log_verify', function (req, res) {
 //     });
 // });
 
-app.get('/resend_otp', function (req, res) {
+app.get('/api/resend_otp', function (req, res) {
     var _otp = Math.random();
     _otp = _otp * 1000000;
-    otp = parseInt(_otp);
+    req.session.OTP = parseInt(_otp);
     var mailOptions = {
         to: mailid,
         subject: "OTP RESEND",
-        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otp + "</h1>"
+        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + req.session.OTP + "</h1>"
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -317,7 +332,7 @@ app.get('/resend_otp', function (req, res) {
     });
 });
 
-app.post('/add_restaurant', function (req, res) {
+app.post('/api/add_restaurant', function (req, res) {
     const { name, address, email, password, phone, gst_in, pan_no, image_url } = req.body;
     var encryptedPassword = Crypto.AES.encrypt(password, GLOBAL_PASS).toString();
     var obj = {
@@ -339,9 +354,10 @@ app.post('/add_restaurant', function (req, res) {
     }
 });
 
-app.post('/add_product', function (req, res) {
-    const { food_name, food_category, food_price, food_image, food_availability, is_veg } = req.body;
+app.post('/api/add_product', function (req, res) {
+    const { rid, food_name, food_category, food_price, food_image, food_availability, is_veg } = req.body;
     var obj = {
+        rid: rid,
         food_name: food_name,
         food_category: food_category,
         food_price: food_price,
@@ -349,7 +365,7 @@ app.post('/add_product', function (req, res) {
         food_availability: food_availability,
         is_veg: is_veg
     };
-    if (food_name !== "" && food_price !== "" && food_category !== "" && food_image !== "" && food_availability !== undefined) {
+    if (rid !== undefined && food_name !== "" && food_price !== "" && food_category !== "" && food_image !== "" && food_availability !== undefined) {
         menu_model.create(obj);
         res.status(201).json({ message: "Product Added." });
     }
@@ -359,12 +375,12 @@ app.post('/add_product', function (req, res) {
 });
 
 
-app.get('/menu_data', async (req, res) => {
+app.get('/api/menu_data', async (req, res) => {
     let resp = await menu_model.find();
     res.send(resp);
 })
 
-app.get('/restaurant_data', async (req, res) => {
+app.get('/api/restaurant_data', async (req, res) => {
     let respo = await restaurant_model.find();
     res.send(respo);
 })

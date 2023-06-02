@@ -14,7 +14,7 @@ import Axios from 'axios';
 export default function Add_product() {
 
     const navigate = useNavigate()
-    const [product, setProduct] = useState({ food_name: "", food_category: "", food_price: "", food_image: "", food_availability: undefined, is_veg: undefined })
+    const [product, setProduct] = useState({ rid: undefined, food_name: "", food_category: "", food_price: "", food_image: "", food_availability: undefined, is_veg: undefined })
     // const [avail, setAvail] = useState(null);
 
     const handleInput = (e) => {
@@ -28,9 +28,9 @@ export default function Add_product() {
     const AddData = async (e) => {
         e.preventDefault()
 
-        const { food_name, food_category, food_price, food_image, food_availability, is_veg } = product;
-        Axios.post('http://localhost:9000/add_product', {
-            food_name, food_category, food_price, food_image, food_availability, is_veg
+        const { rid, food_name, food_category, food_price, food_image, food_availability, is_veg } = product;
+        Axios.post('/api/add_product', {
+            rid, food_name, food_category, food_price, food_image, food_availability, is_veg
         })
         return navigate("/")
     }
@@ -38,6 +38,7 @@ export default function Add_product() {
     return (
         <form>
             <div>
+                <MDBInput wrapperClass='mb-4' id='form6Example3' label='Restaurant ID' name="rid" value={product.rid} onChange={handleInput} />
                 <MDBInput wrapperClass='mb-4' id='form6Example3' label='Food Name' name="food_name" value={product.food_name} onChange={handleInput} />
                 <MDBInput wrapperClass='mb-4' id='form6Example4' label='Food Price' name="food_price" value={product.food_price} onChange={handleInput} />
                 <MDBInput wrapperClass='mb-4' type='text' id='form6Example5' label='Food Category' name="food_category" value={product.food_category} onChange={handleInput} />

@@ -33,7 +33,7 @@ function Register() {
         e.preventDefault()
 
         const { email, password, cpassword, name, phone } = user;
-        Axios.post('http://localhost:9000/user_reg', {
+        Axios.post('/api/user_reg', {
             email, password, cpassword, name, phone
         })
         return navigate("/user/reg/otp")

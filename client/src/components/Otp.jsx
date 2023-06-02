@@ -26,7 +26,7 @@ function Otp() {
     const SendOtp = async (e) => {
         e.preventDefault()
 
-        Axios.post('http://localhost:9000/verify', {
+        Axios.post('/api/verify', {
             otp
         }).then((response) => {
             console.log(response)
@@ -39,7 +39,7 @@ function Otp() {
     const ResendOtp = async (e) => {
         e.preventDefault()
 
-        Axios.get('http://localhost:9000/resend_otp', {
+        Axios.get('/api/resend_otp', {
         }).then((response) => {
             console.log(response)
             if (response.status === 202) {

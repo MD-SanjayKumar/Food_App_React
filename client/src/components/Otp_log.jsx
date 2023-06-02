@@ -15,29 +15,36 @@ import {
     MDBCheckbox
 }
     from 'mdb-react-ui-kit';
+import { useNavigate } from "react-router-dom";
+import { bake_cookie } from 'sfcookies';
 
 function Otp_log() {
-    const setCred = useStore(state => state.setCredentials)
+    const navigate = useNavigate();
+    const email = useStore(state => state.email)
+    const setLog = useStore(state => state.setLog)
+
     const [otp, setOtp] = useState("")
 
     const SendOtp = async (e) => {
         e.preventDefault()
 
-        Axios.post('http://localhost:9000/log_verify', {
+        Axios.post('/api/log_verify', {
             otp
         }).then((response) => {
             console.log(response)
             if (response.status === 202) {
+                bake_cookie("email", email)
+                setLog(1)
                 return navigate("/")
             }
-        }).catch(err => alert(err.response.data.message))
+        }).catch(err => alert(err))
     }
 
 
     const ResendOtp = async (e) => {
         e.preventDefault()
 
-        Axios.get('http://localhost:9000/resend_otp', {
+        Axios.get('/api/resend_otp', {
         }).then((response) => {
             console.log(response)
             if (response.status === 202) {

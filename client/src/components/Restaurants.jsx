@@ -6,18 +6,30 @@ import { useStore } from "../Store";
 function Restaurants() {
   const [restaurant, setRestaurant] = useState([])
   const setRid = useStore(state => state.setRid)
+  const lat = useStore(state => state.curr_lat)
+  const long = useStore(state => state.curr_long)
+  let apiKey = "438e9167cbe344389c24fa16ceb8e885"
 
   useEffect(() =>{
     getData()
   },[])
 
   async function getData(){
-    Axios.get('http://localhost:9000/restaurant_data', {
+    Axios.get('/api/restaurant_data', {
           
         }).then((response)=> {
             console.log(response)
             setRestaurant(response.data)
         }).catch(err => alert(err))
+  }
+
+  const getDistance = async(lat2, long2) => {
+    if(lat !== undefined && long !== undefined){
+    await fetch(`https://api.geoapify.com/v1/routing?waypoints=${lat},${long}|${lat2},${long2}&mode=motorcycle&apiKey=${apiKey}`)
+                  .then(response => response.json())
+                  .then(result => console.log(result))
+                  .catch(error => console.log('error', error))
+    }
   }
 
   console.log(restaurant)
@@ -32,11 +44,12 @@ function Restaurants() {
           </h4>
           <div className="row">
           { restaurant ?
-                  restaurant.map((data, index) => (
+                  restaurant.map((data, index) =>
+                  (
                   <>
             <div className="col-md-12 col-lg-3 mb-4 mb-lg-0 ">
               <div className="card hover-shadow">
-                <Link to="/cur">
+                <Link to={`/restaurant/${data._id}/${data.name}/menu`}>
                   <img
                     src={data.image_url}
                     className="card-img-top"
@@ -52,14 +65,7 @@ function Restaurants() {
 
                   <div className="card-body">
                     <div className="d-flex justify-content-between">
-                      {/* <p className="small">
-                        <a href="#!" className="text-muted">
-                          {data.name}
-                        </a>
-                      </p>
-                      <p className="small text-danger">
-                        <s>$10</s>
-                      </p> */}
+                      {}
                     </div>
 
                     <div className="d-flex justify-content-between mb-3">

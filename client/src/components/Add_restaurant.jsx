@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
     MDBRow,
     MDBCol,
@@ -8,11 +8,15 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
 import Axios from 'axios';
+import { Typeahead } from 'react-bootstrap-typeahead';
 
 export default function Add_restaurant() {
 
     const navigate = useNavigate()
-    const [restaurant, setRestaurant] = useState({ name:"", address:"", email: "", password: "", phone:"", gst_in:"", pan_no:"", image_url:"" })
+    const [restaurant, setRestaurant] = useState({ name: "", address: "", email: "", password: "", phone: "", gst_in: "", pan_no: "", image_url: "" })
+    const [address, setAddress] = useState()
+    const [opt, setOptions] = useState([])
+    const [singleSelections, setSingleSelections] = useState([]);
 
     const handleInput = (e) => {
         let name, value;
@@ -26,23 +30,34 @@ export default function Add_restaurant() {
         e.preventDefault()
 
         const { name, address, email, password, phone, gst_in, pan_no, image_url } = restaurant;
-        Axios.post('http://localhost:9000/add_restaurant', {
+        Axios.post('/add_restaurant', {
             name, address, email, password, phone, gst_in, pan_no, image_url
         })
         return navigate("/")
+    }
+
+    let apiKey = "438e9167cbe344389c24fa16ceb8e885"
+    const suggestionsAddr = async (e) => {
+        console.log(e.target.value)
+        // const response = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${e}&format=json&apiKey=${apiKey}`);
+        // const data = await response.json();
+        // console.log(data.results);
+        // setOptions(data.results);
+        // setAddress(e);
     }
 
     return (
         <form>
             <div>
                 <MDBInput wrapperClass='mb-4' id='form6Example3' label='Restaurant name' name="name" value={restaurant.name} onChange={handleInput} />
-                <MDBInput wrapperClass='mb-4' id='form6Example4' label='Address' name="address" value={restaurant.address} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' type='email' id='form6Example5' label='Email' name="email" value={restaurant.email} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' type='password' id='form6Example5' label='Password' name="password" value={restaurant.password} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' type='tel' id='form6Example6' label='Phone' name="phone" value={restaurant.phone} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' type='text' id='form6Example6' label='Image URL' name="image_url" value={restaurant.image_url} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' id='form6Example3' label='GST No.' name="gst_in" value={restaurant.gst_in} onChange={handleInput}/>
-                <MDBInput wrapperClass='mb-4' id='form6Example4' label='PAN No.' name="pan_no" value={restaurant.pan_no} onChange={handleInput}/>
+                <MDBInput wrapperClass='mb-4' id='form6Example4' label='Address' name="address" value={restaurant.address} onChange={handleInput} />
+                <MDBInput wrapperClass='mb-4' type='email' id='form6Example5' label='Email' name="email" value={restaurant.email} onChange={handleInput} />
+                <MDBInput wrapperClass='mb-4' type='password' id='form6Example5' label='Password' name="password" value={restaurant.password} onChange={handleInput} />
+                <MDBInput wrapperClass='mb-4' type='tel' id='form6Example6' label='Phone' name="phone" value={restaurant.phone} onChange={handleInput} />
+                <MDBInput wrapperClass='mb-4' type='text' id='form6Example6' label='Image URL' name="image_url" value={restaurant.image_url} onChange={handleInput} />
+                
+                <MDBInput wrapperClass='mb-4' id='form6Example3' label='GST No.' name="gst_in" value={restaurant.gst_in} onChange={handleInput} />
+                <MDBInput wrapperClass='mb-4' id='form6Example4' label='PAN No.' name="pan_no" value={restaurant.pan_no} onChange={handleInput} />
 
                 <MDBBtn className='mb-4' onClick={AddData} block>
                     Add Restaurant

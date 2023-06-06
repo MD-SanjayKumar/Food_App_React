@@ -15,6 +15,8 @@ import {
     MDBIcon,
     MDBCheckbox
 } from "mdb-react-ui-kit"
+import Nav from "./Nav"
+import Footer from "./Footer"
 
 function Login() {
     const navigate = useNavigate()
@@ -32,20 +34,25 @@ function Login() {
     const SendData = async (e) => {
         e.preventDefault()
 
-        const { email, password, cpassword } = user;
+        const { email, password } = user;
         Axios.post('/api/user_lg', {
             email, password
         }).then((response) => {
             console.log(response)
-            if (response.status === 202) {
+            if (response.status === 201) {
                 setCred(email, password)
                 return navigate("/user/log/otp")
+            }else{
+                alert("invalid credentials")
             }
         }).catch(err => alert(err.response.data.message))
     }
 
     return (
         <>
+        <div>
+                <Nav/>
+            </div>
             <form method="post" onSubmit={SendData}>
                 <MDBContainer fluid>
                     <MDBCard className="text-black m-5 h-100" style={{ borderRadius: "25px" }}>
@@ -91,6 +98,9 @@ function Login() {
                     </MDBCard>
                 </MDBContainer>
             </form>
+            <div>
+                <Footer/>
+            </div>
         </>
     )
 }

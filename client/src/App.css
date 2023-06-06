@@ -26,3 +26,9 @@ overflow-y: scroll;
 .item-section{
   width: 100vw;
 }
+
+.leaflet-container{
+  height: 500px;
+  width: 100%;
+  margin: auto;
+}

@@ -15,11 +15,13 @@ import {
     MDBCheckbox
 }
     from 'mdb-react-ui-kit';
+import { useNavigate } from "react-router-dom";
 
 function Otp() {
-    useEffect(() =>{
+    const navigate = useNavigate()
+    // useEffect(() =>{
 
-    },[])
+    // },[])
     const setCred = useStore(state => state.setCredentials)
     const [otp, setOtp] = useState("")
 
@@ -30,10 +32,12 @@ function Otp() {
             otp
         }).then((response) => {
             console.log(response)
-            if (response.status === 202) {
-                return navigate("/")
+            if (response.data.code === 200) {
+                return navigate("/user/login")
+            } else {
+                alert("Found some error while creating account.")
             }
-        }).catch(err => alert(err.response.data.message))
+        }).catch(err => alert(err))
     }
 
     const ResendOtp = async (e) => {
@@ -42,10 +46,12 @@ function Otp() {
         Axios.get('/api/resend_otp', {
         }).then((response) => {
             console.log(response)
-            if (response.status === 202) {
+            if (response.data.code === 200) {
                 alert("OTP Resent")
+            }else{
+                alert("Something went wrong")
             }
-        }).catch(err => alert(err.response.data.message))
+        }).catch(err => alert(err))
     }
 
     return (

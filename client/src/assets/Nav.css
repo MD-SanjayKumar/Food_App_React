@@ -10,7 +10,7 @@
     left: 0;
     right: 0;
     height: 80px;
-    background: #fff;
+    background: #ffffff;
     z-index: 1000;
     will-change: transform;
     transform: translateZ(0);
@@ -114,6 +114,7 @@
 .dashboard_navbar .navbar-collapse .navMenu li a:hover {
     color: #4a51d9;
 }
+
 .dashboard_navbar .navbar-collapse .navMenu li a:hover svg {
     fill: #4a51d9;
     stroke: #4a51d9;

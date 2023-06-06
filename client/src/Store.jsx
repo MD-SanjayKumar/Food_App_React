@@ -32,6 +32,52 @@ const cartStore = (set) =>({
       }));
     },
     setTotal: (i) => set(state => ({ cartTotal: i })),
+
+    updateItem: (item) =>
+    set((state) => ({
+      cart: state.cart.map((i) =>
+        i.fname === item.fname ? { fname: item.fname, fprice: item.fprice, fimg: item.fimg, quantity: item.quantity } : item
+      ),
+    })),
+
+    dropCart: () =>{
+      set((state) => ({ 
+        cart: [],
+      }));
+    },
 })
 
 export const useCart = create(cartStore);
+
+const admin = (set) => ({
+  email: null,
+  password: null,
+  lat: null,
+  long: null,
+  setCredentials: (e, p) => set(state => ({ email: e, password: p })),
+  setLatLong: (e, p) => set(state => ({ lat: e, long: p })),
+})
+
+export const useAdminStore = create(admin);
+
+const restaurant = (set) => ({
+  email: null,
+  password: null,
+  rid: null,
+  setCredentials: (e, p) => set(state => ({ email: e, password: p })),
+  setRid: (e) => set(state => ({ rid: e })),
+})
+
+export const useRestaurantStore = create(restaurant);
+
+const delivery = (set) => ({
+  email: null,
+  password: null,
+  dp_id: null,
+  is_logged: 0,
+  setCredentials: (e, p) => set(state => ({ email: e, password: p })),
+  setDpId: (e) => set(state => ({ dp_id: e })),
+  setLog: (e) => set(state => ({ is_logged: e })),
+})
+
+export const useDeliveryStore = create(delivery);

@@ -16,6 +16,8 @@ import {
     MDBCheckbox
 }
     from 'mdb-react-ui-kit';
+import Nav from "./Nav"
+import Footer from "./Footer"
 
 function Register() {
     const navigate = useNavigate()
@@ -35,12 +37,25 @@ function Register() {
         const { email, password, cpassword, name, phone } = user;
         Axios.post('/api/user_reg', {
             email, password, cpassword, name, phone
-        })
-        return navigate("/user/reg/otp")
+        }).then((response) => {
+            console.log(response)
+            if (response.data.code === 200) {
+                navigate("/user/reg/otp")
+            }
+            else if (response.data.code === 201) {
+                alert("User already exists")
+            }
+            else {
+                alert("Please enter valid credentials.")
+            }
+        }).catch(err => alert(err.response.data.message))
     }
 
     return (
         <>
+            <div>
+                <Nav/>
+            </div>
             <form method="post">
                 <MDBContainer fluid>
 
@@ -114,6 +129,9 @@ function Register() {
                 <button onClick={SendData}>Register</button> */}
 
             </form>
+            <div>
+                <Footer/>
+            </div>
         </>
     )
 }

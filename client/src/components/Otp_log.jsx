@@ -32,10 +32,13 @@ function Otp_log() {
             otp
         }).then((response) => {
             console.log(response)
-            if (response.status === 202) {
+            if (response.data.code == 200) {
                 bake_cookie("email", email)
                 setLog(1)
                 return navigate("/")
+            }
+            else{
+                alert("invalid credentials")
             }
         }).catch(err => alert(err))
     }
@@ -47,10 +50,12 @@ function Otp_log() {
         Axios.get('/api/resend_otp', {
         }).then((response) => {
             console.log(response)
-            if (response.status === 202) {
+            if (response.data.code === 200) {
                 alert("OTP Resent")
+            }else{
+                alert("Something went wrong")
             }
-        }).catch(err => alert(err.response.data.message))
+        }).catch(err => alert(err))
     }
 
     return (

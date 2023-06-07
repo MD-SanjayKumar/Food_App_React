@@ -32,7 +32,7 @@ export default function Items() {
   const [km, setKm] = useState(0);
   const [time, setTime] = useState(0);
   const [location, setLocation] = useState('');
-  
+
 
   useEffect(() => {
     getData()
@@ -73,12 +73,26 @@ export default function Items() {
     }
   }
 
-  const handleCartAdd = async (rid, name, price, image, qty) => {
-    const cartItem = cart.find((item) => item.fname === name);
-    cartItem ?
-      updateCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
-      :
-      addCart({ restaurant_id: rid ,fname: name, fprice: price, fimg: image, quantity: qty })
+  const handleCartAdd = async (rid, i_id, name, price, image, qty) => {
+    let is_contain = cart.find((item) => item.restaurant_id === rid)
+    if (cart.length === 0 ){
+      addCart({ restaurant_id: rid, item_id: i_id,fname: name, fprice: price, fimg: image, quantity: qty })
+    } else if (is_contain){
+      const cartItem = cart.find((item) => item.fname === name);
+        cartItem ?
+          updateCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty })
+          :
+          addCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty,  })
+    }else{
+      alert("Your cart contains items from other restaurant.")
+    }
+
+        // const cartItem = cart.find((item) => item.fname === name);
+        // cartItem ?
+        //   updateCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
+        //   :
+        //   addCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
+  
   }
   console.log(cart)
 
@@ -86,9 +100,9 @@ export default function Items() {
     if (user_lat !== undefined && user_long !== undefined) {
       let longi2 = Math.abs(parseFloat(long2) - 360);
       if (longi2 > 180) {
-        longi2 = 360 - longi2; 
+        longi2 = 360 - longi2;
       }
-      const body = {"mode":"motorcycle","sources":[{"location":[user_long,user_lat]}],"targets":[{"location":[longi2,lat2]}]};
+      const body = { "mode": "motorcycle", "sources": [{ "location": [user_long, user_lat] }], "targets": [{ "location": [longi2, lat2] }] };
       fetch(`https://api.geoapify.com/v1/routematrix?apiKey=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -98,8 +112,8 @@ export default function Items() {
       })
         .then(res => res.json())
         .then(res => {
-          setKm(res.sources_to_targets[0][0].distance/1000)
-          setTime(res.sources_to_targets[0][0].time/60)
+          setKm(res.sources_to_targets[0][0].distance / 1000)
+          setTime(res.sources_to_targets[0][0].time / 60)
         });
     } else {
       alert("Please select your location")
@@ -168,7 +182,7 @@ export default function Items() {
                                       <i className="fa fa-star"></i>
                                       <i className="fa fa-star-half"></i>
                                     </div>
-                                    {filteredData.is_veg ? <span><img src="https://n3.sdlcdn.com/imgs/d/g/8/Veg_symbol_svg-f30b6.png" style={{width:'30px'}}/></span>:<span><img src="https://clipground.com/images/non-veg-symbol-png-5.png" style={{width:'25px'}}/></span>}
+                                    {filteredData.is_veg ? <span><img src="https://n3.sdlcdn.com/imgs/d/g/8/Veg_symbol_svg-f30b6.png" style={{ width: '30px' }} /></span> : <span><img src="https://clipground.com/images/non-veg-symbol-png-5.png" style={{ width: '25px' }} /></span>}
                                   </div>
 
                                   <p className=" mb-4 mb-md-0" style={{ fontSize: '10px' }}>
@@ -191,7 +205,7 @@ export default function Items() {
                                         </button>
                                       </div>
                                       <div className="d-flex flex-row align-items-center justify-content-center">
-                                        <button className="btn btn-primary py-2" onClick={() => handleCartAdd(params.id, filteredData.food_name, filteredData.food_price, filteredData.food_image, itemCount)}>Add</button>
+                                        <button className="btn btn-primary py-2" onClick={() => handleCartAdd(params.id, filteredData._id, filteredData.food_name, filteredData.food_price, filteredData.food_image, itemCount)}>Add</button>
                                       </div>
                                     </>
                                     : <>

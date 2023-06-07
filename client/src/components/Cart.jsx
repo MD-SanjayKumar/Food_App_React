@@ -11,22 +11,31 @@ import {
     MDBRow,
     MDBTypography,
 } from "mdb-react-ui-kit";
-import { useCart } from "../Store";
+import { useCart, useStore } from "../Store";
 import { Link } from "react-router-dom";
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "./Nav";
 import Footer from "./Footer";
+import { Button, Modal } from "react-bootstrap";
+import GetDeliveryLatLong from "./GetDeliveryLatLong";
 
 export default function Cart() {
     const navigate = useNavigate()
-    const [fullAddress, setFullAddress] = useState("");
+    const [full_address, setFullAddress] = useState("");
     const cart = useCart((e => e.cart))
     const remove = useCart((e => e.removeCart))
     const setTotal = useCart((e => e.setTotal))
     const cartTotal = useCart((e => e.cartTotal))
     const dropCart = useCart((e => e.dropCart))
+    const lat = useStore((e => e.d_lat))
+    const long = useStore((e => e.d_long))
+
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
     var total;
     if (cart.length !== 0) {
         total = (cart.reduce((a, value) => a = a + parseFloat(value.fprice * value.quantity), 0))
@@ -34,12 +43,13 @@ export default function Cart() {
     }
 
     const handleCheckOut = async () => {
-        if (fullAddress.length !== 0) {
+        if (full_address.length !== 0) {
             let email = read_cookie("email")
+            let u_id = read_cookie("user_id")
             console.log(email)
-            if (email != "") {
+            if (email != "" && u_id != "") {
                 axios.post('/api/user/order_data', {
-                    email, cart, order_date: new Date().toDateString(), fullAddress
+                    u_id, cart, full_address, lat, long, total 
                 }).then((response) => {
                     console.log(response)
                     if (response.data.code === 200) {
@@ -65,12 +75,29 @@ export default function Cart() {
             <div>
                 <Nav />
             </div>
+            <>
+           <div style={{ width: '50%' }}>
+            <Modal show={show} onHide={handleClose} animation={false}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Set Latitude-Longitude</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <GetDeliveryLatLong />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Set
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            </div>
+            </>
             <section className="h-100" style={{ backgroundColor: "#eee" }}>
                 {
                     cart.length !== 0 ?
                         <>
-                            <MDBContainer className="py-5 h-100">
-                                <MDBRow className="justify-content-center align-items-center h-100">
+                            <MDBContainer className="py-5">
+                                <MDBRow className="justify-content-center align-items-center">
                                     <MDBCol md="10">
                                         <div className="d-flex justify-content-between align-items-center mb-4">
                                             <MDBTypography tag="h3" className="fw-normal mb-0 text-black">
@@ -82,6 +109,9 @@ export default function Cart() {
                                                 Enter Full Address
                                             </MDBTypography>
                                             <MDBInput type="text" placeholder="House No.,Flat Name or number, Nearby Landmark, City, State" onChange={(e) => setFullAddress(e.target.value)}></MDBInput>
+                                        </MDBCard>
+                                        <MDBCard>
+                                        <Link onClick={handleShow}>Set location from map</Link>
                                         </MDBCard>
 
                                         {

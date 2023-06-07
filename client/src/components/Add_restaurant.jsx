@@ -7,7 +7,7 @@ import {
     MDBCheckbox,
     MDBBtn
 } from 'mdb-react-ui-kit';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import GetLatLong from './admin/GetLatLong';
@@ -73,7 +73,7 @@ export default function Add_restaurant() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
-                        Close
+                        Set
                     </Button>
                     {/* <Button variant="primary" onClick={handleClose}>
             Save Changes
@@ -92,13 +92,13 @@ export default function Add_restaurant() {
                     <MDBInput className='mb-4' id='form6Example3' label='GST No.' name="gst_in" value={restaurant.gst_in} onChange={handleInput} />
                     <MDBInput className='mb-4' id='form6Example4' label='PAN No.' name="pan_no" value={restaurant.pan_no} onChange={handleInput} />
                     <MDBInput className='mb-4' type='text' id='form6Example6' label='Restaurant Description' name="description" value={restaurant.description} onChange={handleInput} />
-
-                    <MDBBtn className='mb-4' block>
+                    <Link onClick={handleShow}>Set location from map</Link>
+                    <MDBBtn className='my-3' block>
                         Add Restaurant
                     </MDBBtn>
                 </div>
             </form>
-            <button onClick={handleShow}>Set location from map</button>
+            
         </div>
     );
 }

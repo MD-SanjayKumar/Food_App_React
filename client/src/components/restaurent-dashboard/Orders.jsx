@@ -1,45 +1,29 @@
-import React, { useEffect, useState } from "react";
-import {
-    MDBBtn,
-    MDBCard,
-    MDBCardBody,
-    MDBCardImage,
-    MDBCol,
-    MDBContainer,
-    MDBIcon,
-    MDBInput,
-    MDBRow,
-    MDBTypography,
-} from "mdb-react-ui-kit";
-import { useCart } from "../Store";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react'
+import Navbar from './Navbar'
+import axios from 'axios'
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import Footer from "./Footer";
-import Nav from "./Nav";
 
+function Orders_Del() {
+    const id = read_cookie("restaurant_id");
 
-export default function MyOrders() {
     const [myOrders, setMyOrders] = useState();
     let num;
     let dates;
     let quantity;
     let item;
-
+    let status;
+    let user_id;
 
     useEffect(() => {
         getData()
     }, [])
-
+    
     async function getData() {
-        let user_id = read_cookie("user_id")
-        console.log(user_id)
-        if (user_id != "") {
-            axios.post('/api/user/myorder', {
-                user_id
+        if (id != "") {
+            axios.post('/api/restaurant/order/list', {
+                id
             }).then((response) => {
-                // console.log(response.data)
+                console.log(response.data)
                 setMyOrders(response.data)
             }).catch(err => {
                 alert(err)
@@ -79,11 +63,24 @@ export default function MyOrders() {
         }
     }
 
+    if (myOrders != null) {
+        if (Object.keys(myOrders).length > 0 && myOrders["status"] != undefined) {
+            status = myOrders["status"]
+            console.log(status)
+        }
+    }
+
+    if (myOrders != null) {
+        if (Object.keys(myOrders).length > 0 && myOrders["user"] != undefined) {
+            user_id = myOrders["user"]
+            console.log(user_id)
+        }
+    }
 
     return (
         <>
             <div>
-                <Nav />
+                <Navbar />
             </div>
             <div className="py-5">
                 {
@@ -91,7 +88,7 @@ export default function MyOrders() {
                     dates ? dates.map((date, i) => {
                         return (
                             <div>
-                                <div className='bg-light rounded mx-auto mb-2 w-50 py-2 px-4'>
+                                <div className='bg-light rounded mx-auto mb-2 w-75 py-2 px-4'>
                                     {/* <p>{date}</p>
                                     <hr /> */}
                                     {
@@ -99,6 +96,9 @@ export default function MyOrders() {
                                             // quantity ? quantity[0][i].map((k) => {
                                             return (
                                                 <>
+                                                <p className="mt-3">User ID:
+                                                {user_id[j]}</p>
+                                                <hr />
                                                 <p className="mt-3">{date[j]}</p>
                                                 <hr />
                                                     <div className='d-flex'>
@@ -110,13 +110,13 @@ export default function MyOrders() {
                                                             <div className='d-flex justify-content-between'>
                                                                 <div className='d-flex'>
                                                                     <p className='me-2'>Price: <span className='text-secondary'>₹ {e.food_price}</span></p>
-                                                                    <p>Quantity: <span className='text-secondary'>{e.quantity}</span></p>
+                                                                    <p>Quantity: <span className='text-secondary'>{quantity[0][j]}</span></p>
                                                                 </div>
                                                                 <div className=''>Total: <span className='text-secondary'>₹ {e.food_price * quantity[0][j]}</span></div>
+                                                                <div className=''>Status: <span className='text-secondary'>{status[0][j]}</span></div>
                                                             </div>
                                                         </div>
                                                     </div>
-
                                                 </>
                                             )
                                         // }):<></>
@@ -141,8 +141,7 @@ export default function MyOrders() {
                                         <div className=''>
                                             <img src="https://i.ibb.co/r5pH0RP/undraw-No-data-re-kwbl.png" alt="isometric-plate" width={100} />
                                         </div>
-                                        <p className='fs-5 mt-4 '>You have not ordered anything yet.</p>
-                                        <Link to="/"><button className='btn btn-primary'>Continue shopping</button></Link>
+                                        <p className='fs-5 mt-4 '>You haven't received any order.</p>
                                     </div>
                                 </div>
                             </div>
@@ -150,9 +149,8 @@ export default function MyOrders() {
                 }
 
             </div>
-            <div>
-                <Footer />
-            </div>
         </>
     );
 }
+
+export default Orders_Del

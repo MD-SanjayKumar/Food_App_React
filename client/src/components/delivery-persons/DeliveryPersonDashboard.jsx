@@ -6,7 +6,7 @@ import Navbar from './Navbar';
 import Home from './Home';
 import Orders from './Orders';
 import Profile from './Profile';
-import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
+
 
 function DeliveryPersonDashboard() {
 

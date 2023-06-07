@@ -52,7 +52,7 @@ function Sidebar() {
 
                 <li className={active ===4 ? ' active nav-item p-2 my-1': 'nav-item p-2 my-1'}
                 onClick={e => setActive(4)}>
-                    <Link to="/restaurant_dash" className='p-1 text-decoration-nonde text-white'>
+                    <Link to="/restaurant_dash/list-order" className='p-1 text-decoration-nonde text-white'>
                         <i className='bi bi-table me-3 fs-6'></i>
                         <span className='fs-6'>Orders</span>
                     </Link>
@@ -60,7 +60,7 @@ function Sidebar() {
             </ul>
         </div>
 
-        <div>
+        {/* <div>
             <hr className='text-white'/>
             <div className='nav-item p-2'>
                 <a href='/' className='p-1 text-decoration-none text-white'>
@@ -68,7 +68,7 @@ function Sidebar() {
                     <span className='fs-6'>Admin</span>
                 </a>
             </div>
-        </div>
+        </div> */}
     </div>
   )
 }

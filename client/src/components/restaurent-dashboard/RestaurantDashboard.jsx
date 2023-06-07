@@ -9,6 +9,7 @@ import Add_product from '../Add_product';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 import { useRestaurantStore } from '../../Store';
 import axios from 'axios';
+import Orders_Del from './Orders';
 
 
 function RestaurantDashboard() {
@@ -48,6 +49,7 @@ function RestaurantDashboard() {
           <Route path='' element={<><Navbar /><Home /></>}></Route>
           <Route path='add-menu' element={<Add_product />}></Route>
           <Route path='list-menu' element={<MenuList />}></Route>
+          <Route path='list-order' element={<Orders_Del />}></Route>
           {/* <Route path='delivery-persons-list' element={<DeliveryPersonsList />}></Route>
                         <Route path='orders' element={<Orders />}></Route> */}
         </Routes>

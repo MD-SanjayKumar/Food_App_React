@@ -22,6 +22,7 @@ function Nav() {
         setCred("", "")
         setLog(0)
         delete_cookie("email")
+        delete_cookie("user_id")
     }
 
     useEffect(()=>{

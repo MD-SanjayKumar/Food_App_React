@@ -1,9 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import { Button, Modal} from "react-bootstrap";
+import axios from 'axios';
 
 function DeliveryPersonsList() {
     const [show, setShow] = useState(false);
+
+    const [details, setDetails] = useState();
+    
+    useEffect(() => {
+        getData()
+    }, [])
+    
+    async function getData() {
+            axios.get('/api/delivery/list').then((response) => {
+                console.log("----",response.data)
+                setDetails(response.data)
+            }).catch(err => {
+                alert(err)
+                console.log(err)
+            })
+    }
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -54,9 +71,13 @@ function DeliveryPersonsList() {
                     <caption className='text-black fs-4'>Delivery Persons</caption>
 
                     <tbody>
+                      { details ? details.map((e, i)=>{
+                        return(
+
+                      
                         <tr>
-                            <th scope='row'>1</th>
-                            <th>Babu bhai</th>
+                            <th scope='row'>{i+1}</th>
+                            <th>{e.name}</th>
                             <th className='text-center'>
                                 <button className='bg-transparent border-0' onClick={handleShow}>
                                     <i className='fa fa-edit'></i>
@@ -67,7 +88,8 @@ function DeliveryPersonsList() {
                                 </button>
                             </th>
                         </tr>
-                        
+                          )
+                        }):<>No data found</>}
                         
                     </tbody>
                 </table>

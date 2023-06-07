@@ -17,10 +17,12 @@ import {
 } from "mdb-react-ui-kit"
 import Nav from "./Nav"
 import Footer from "./Footer"
+import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 
 function Login() {
     const navigate = useNavigate()
     const setCred = useStore(state => state.setCredentials)
+    const setUid = useStore(state => state.setUid)
     const [user, setUser] = useState({ email: "", password: "" })
 
     const handleInput = (e) => {
@@ -39,7 +41,9 @@ function Login() {
             email, password
         }).then((response) => {
             console.log(response)
-            if (response.status === 201) {
+            if (response.data.code === 200) {
+                setUid(response.data.user_id)
+                bake_cookie("user_id", response.data.user_id)
                 setCred(email, password)
                 return navigate("/user/log/otp")
             }else{

@@ -4,14 +4,18 @@ const store = (set) => ({
     restaurant_id: null,
     email: null,
     password: null,
+    user_id: null,
     log: null,
     curr_lat: undefined, curr_long: undefined,
     currentAddress: null,
     itemData: [],
+    d_lat: undefined, d_long: undefined,
     setCredentials: (e, p) => set(state => ({ email: e, password: p })),
+    setUid: (e) => set(state => ({ user_id: e })),
     setRid: (i) => set(state => ({ restaurant_id: i })),
     setLog: (i) => set(state => ({ log: i })),
     setPointer: (lat, long) => set(state => ({ curr_lat: lat, curr_long: long })),
+    setLoc: (lat, long) => set(state => ({ d_lat: lat, d_long: long })),
     setCurrAddress: (addr) => set(state => ({ currentAddress: addr })),
     setCart: (item) => set(state=> ({ itemData:[state.itemData, item]}))
   })
@@ -36,7 +40,7 @@ const cartStore = (set) =>({
     updateItem: (item) =>
     set((state) => ({
       cart: state.cart.map((i) =>
-        i.fname === item.fname ? { fname: item.fname, fprice: item.fprice, fimg: item.fimg, quantity: item.quantity } : item
+        i.fname === item.fname ? { restaurant_id: item.restaurant_id, fname: item.fname, fprice: item.fprice, fimg: item.fimg, quantity: item.quantity } : item
       ),
     })),
 
@@ -78,6 +82,9 @@ const delivery = (set) => ({
   setCredentials: (e, p) => set(state => ({ email: e, password: p })),
   setDpId: (e) => set(state => ({ dp_id: e })),
   setLog: (e) => set(state => ({ is_logged: e })),
+  followUpLat :null,
+  followUpLong :null,
+  setFollowup: (e, p) => set(state => ({ followUpLat: e, followUpLong: p })),
 })
 
 export const useDeliveryStore = create(delivery);

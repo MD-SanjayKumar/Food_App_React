@@ -155,13 +155,33 @@ const menu_model = mongoose.model('menu_data', menuSchema)
 
 const OrdersSchema = new mongoose.Schema(
     {
-        email: {
+        user_id: {
             type: String,
             require: true,
-            unique: true
         },
-        order: {
+        restaurant_id: {
+            type: String,
+            require: true,
+        },
+        user_address: {
+            type: String,
+            require: true,
+        },
+        user_lat_long: {
             type: Array,
+            require: true,
+        },
+        orders: {
+            type: Array,
+            require: true,
+        },
+        total_amount: {
+            type: String,
+            require: true,
+        },
+        order_status: {
+            type: String,
+            require: true,
         }
     },
     {
@@ -245,7 +265,6 @@ server.listen(port, () => {
     console.log(`Listening to port ${port}`)
 })
 
-
 const GLOBAL_PASS = "sudo-pt"
 
 const transporter = nodemailer.createTransport({
@@ -273,7 +292,7 @@ app.post("/api/user_reg", async (req, res) => {
         let value = await query.findOne();
         if (value) {
             if (value.email == mailid) {
-                res.json({ message: "User already exists.", code:201 });
+                res.json({ message: "User already exists.", code: 201 });
             }
         } else {
             var _otp = Math.random();
@@ -334,7 +353,7 @@ app.post("/api/user_lg", async (req, res) => {
                         res.json({ message: error });
                     } else {
                         console.log('Email sent: ' + info.response);
-                        res.sendStatus(201).json({ message: "Enter otp sent on your email" })
+                        res.json({ message: "Enter otp sent on your email", user_id: value._id, code: 200 })
                     }
                 });
 
@@ -372,7 +391,7 @@ app.post('/api/log_verify', function (req, res) {
     const { otp } = req.body;
     console.log("verify:", req.session)
     if (parseInt(otp) === parseInt(req.session.OTP)) {
-        res.json({ message: "Login successful.", code:200 });
+        res.json({ message: "Login successful.", code: 200 });
     }
     else {
         res.json({ message: "Incorrect OTP." });
@@ -432,7 +451,7 @@ app.post('/api/add_restaurant', function (req, res) {
             } else {
                 console.log('Email sent: ' + info.response);
                 restaurant_model.create(obj);
-                res.json({ message: "Restaurant added.", code:200 })
+                res.json({ message: "Restaurant added.", code: 200 })
             }
         });
     }
@@ -478,7 +497,7 @@ app.post("/api/restaurant_login", async (req, res) => {
             console.log(decrypt)
             console.log(encrp)
             if (value.email == email && decrypt == encrp) {
-                res.json({id:value._id})
+                res.json({ id: value._id })
             } else {
                 res.status(400).json({ message: "Wrong Credentials." });
             }
@@ -534,157 +553,167 @@ app.post("/api/admin/login", async (req, res) => {
 })
 
 app.post('/api/restaurant_data/del', async (req, res) => {
-    let {id} = req.body;
+    let { id } = req.body;
     try {
-        await restaurant_model.deleteOne({ _id: id}).then(async()=>{
-                await menu_model.deleteOne({ rid: id}).then(function(){
-                    res.json({message: "record deleted"})
-                }).catch(function(error){
-                    res.json({message: error})
-                });
-        }).catch(function(error){
-            res.json({message: error})
-        });; 
+        await restaurant_model.deleteOne({ _id: id }).then(async () => {
+            await menu_model.deleteOne({ rid: id }).then(function () {
+                res.json({ message: "record deleted" })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        }).catch(function (error) {
+            res.json({ message: error })
+        });;
     } catch (error) {
-        res.json({message:error})
+        res.json({ message: error })
     }
 })
 
 app.post('/api/restaurant_data/update', async (req, res) => {
-    let {id, current_option, changeVal} = req.body;
-    if (current_option == 'name'){
-    try {
-        await restaurant_model.findOneAndUpdate({ _id: id}, { $set: { "name": changeVal }}).then(async()=>{
-            res.json({message: "Name updated."})
-        }).catch(function(error){
-            res.json({message: error})
-        }); 
-    } catch (error) {
-        res.json({message:error})
-    }
-    }
-    else if (current_option == 'address'){
+    let { id, current_option, changeVal } = req.body;
+    if (current_option == 'name') {
         try {
-            await restaurant_model.findOneAndUpdate({ _id: id}, { $set: { "address": changeVal }}).then(async()=>{
-                res.json({message: "Address updated."})
-            }).catch(function(error){
-                res.json({message: error})
-            }); 
+            await restaurant_model.findOneAndUpdate({ _id: id }, { $set: { "name": changeVal } }).then(async () => {
+                res.json({ message: "Name updated." })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
         } catch (error) {
-            res.json({message:error})
+            res.json({ message: error })
         }
+    }
+    else if (current_option == 'address') {
+        try {
+            await restaurant_model.findOneAndUpdate({ _id: id }, { $set: { "address": changeVal } }).then(async () => {
+                res.json({ message: "Address updated." })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
         }
-    else{
-        res.json({message:"Invalid option"})
+    }
+    else {
+        res.json({ message: "Invalid option" })
     }
 })
 
 app.post("/api/user/order_data", async (req, res) => {
-    let { email, cart, order_date, fullAddress } = req.body;
-    // await cart.splice(0, 0, { order_date: order_date })
-    cart.unshift({ order_date: order_date, full_address: fullAddress, status: "ongoing" })
-    let query = order_model.where({ email: email });
-    let value = await query.findOne();
-    if (value === null) {
-        try {
-            var obj = {
-                email: email,
-                order: [cart] 
-            };
-            order_model.create(obj).then(() => {
-                res.json({ message: "Order added.", code: 200 })
-            })
-        } catch (error) {
-            console.log(error)
-            res.json({ message: error.message })
+    let { u_id, cart, full_address, lat, long, total } = req.body;
+    let cart_item = [];
+    let r_id = cart[0].restaurant_id;
+    for (i in cart) {
+        let obj = {
+            item_id: cart[i].item_id,
+            quantity: cart[i].quantity
         }
-    } else {
-        try {
-            await order_model.findOneAndUpdate({ email: email }, { $push: { order: cart } }).then((resp) => {
-                res.json({ message: "Order added.", code: 200 })
-            })
-        } catch (error) {
-            console.log(error)
-            res.json({ message: error.message })
-        }
+        cart_item.push(obj)
+    }
+    let longitude = Math.abs(parseFloat(long) - 360);
+    if (longitude > 180) {
+        longitude = 360 - longitude;
+    }
+    console.log(cart_item)
+    try {
+        var obj = {
+            user_id: u_id,
+            restaurant_id: r_id,
+            user_address: full_address,
+            user_lat_long: {
+                lat: lat, long: longitude
+            },
+            orders: cart_item,
+            total_amount: total,
+            order_status: "ongoing",
+        };
+        order_model.create(obj).then(() => {
+            res.json({ message: "Order added.", code: 200 })
+        })
+    } catch (error) {
+        console.log(error)
+        res.json({ message: error.message })
     }
 })
 
 app.post("/api/user/myorder", async (req, res) => {
+    let item = []
+    let qty = []
+    let item_data = []
     let date = []
-    let cart_data = []
     try {
-        let { email } = req.body;
-        let query = order_model.where({ "email": email });
-        let value = await query.findOne();
-        date.push(value.order.map((val)=>val[0].order_date))
-        cart_data.push(value.order.map((val)=>val.splice(1,)))
-        // let cart_values = (cart_data[0])
-        // let date_values = (date[0])
-        let cart_values = (cart_data[0]).reverse()
-        let date_values = (date[0]).reverse()
-        // console.log(cart_values[0])
-        res.json({date_values, cart_values})
+        let { user_id } = req.body;
+        let query = order_model.where({ "user_id": user_id });
+        let value = await query.find();
+        item.push(value.map(e=> e.orders.map(val=> val.item_id)))
+        qty.push(value.map(e=> e.orders.map(val=> val.quantity)))
+        date.push(value.map(e=> e.createdAt))
+        console.log(date)
+        for (i in item){
+            let query = menu_model.where({ "_id": item[i] });
+            let value = await query.find();
+            item_data.push(value)
+        }
+        res.json({date, item, qty, item_data})
     } catch (error) {
         return res.json({ message: error.message })
     }
 })
 
 app.post('/api/item/delete', async (req, res) => {
-    let {id} = req.body;
+    let { id } = req.body;
     try {
-        await menu_model.deleteOne({ _id: id}).then(async()=>{
-                res.json({message: "Item deleted", code: 200})
-        }).catch(function(error){
-            res.json({message: error})
+        await menu_model.deleteOne({ _id: id }).then(async () => {
+            res.json({ message: "Item deleted", code: 200 })
+        }).catch(function (error) {
+            res.json({ message: error })
         });
     } catch (error) {
-        res.json({message:error})
+        res.json({ message: error })
     }
 })
 
 app.post('/api/item/update', async (req, res) => {
-    let {id, current_option, changeVal} = req.body;
-    if (current_option == 'img'){
-    try {
-        await menu_model.findOneAndUpdate({ _id: id}, { $set: { "food_image": changeVal }}).then(async()=>{
-            res.json({message: "Image updated.", code:200})
-        }).catch(function(error){
-            res.json({message: error})
-        }); 
-    } catch (error) {
-        res.json({message:error})
-    }
-    }
-    else if (current_option == 'price'){
+    let { id, current_option, changeVal } = req.body;
+    if (current_option == 'img') {
         try {
-            await menu_model.findOneAndUpdate({ _id: id}, { $set: { "food_price": changeVal }}).then(async()=>{
-                res.json({message: "Address updated.", code:200})
-            }).catch(function(error){
-                res.json({message: error})
-            }); 
+            await menu_model.findOneAndUpdate({ _id: id }, { $set: { "food_image": changeVal } }).then(async () => {
+                res.json({ message: "Image updated.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
         } catch (error) {
-            res.json({message:error})
+            res.json({ message: error })
         }
+    }
+    else if (current_option == 'price') {
+        try {
+            await menu_model.findOneAndUpdate({ _id: id }, { $set: { "food_price": changeVal } }).then(async () => {
+                res.json({ message: "Address updated.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
         }
-        else if (current_option == 'name'){
-            try {
-                await menu_model.findOneAndUpdate({ _id: id}, { $set: { "food_name": changeVal }}).then(async()=>{
-                    res.json({message: "Name updated.", code:200})
-                }).catch(function(error){
-                    res.json({message: error})
-                }); 
-            } catch (error) {
-                res.json({message:error})
-            }
-            }
-    else{
-        res.json({message:"Invalid option"})
+    }
+    else if (current_option == 'name') {
+        try {
+            await menu_model.findOneAndUpdate({ _id: id }, { $set: { "food_name": changeVal } }).then(async () => {
+                res.json({ message: "Name updated.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
+        }
+    }
+    else {
+        res.json({ message: "Invalid option" })
     }
 })
 
 app.post('/api/res/data/conf', async (req, res) => {
-    let {i} = req.body;
+    let { i } = req.body;
     let query = restaurant_model.where({ "_id": i });
     let value = await query.findOne();
     res.json(value);
@@ -719,7 +748,7 @@ app.post('/api/add_delivery_person', function (req, res) {
             } else {
                 console.log('Email sent: ' + info.response);
                 delivery_model.create(obj);
-                res.json({ message: "Person added.", code:200 })
+                res.json({ message: "Person added.", code: 200 })
             }
         });
     }
@@ -744,7 +773,7 @@ app.post("/api/delivery_login", async (req, res) => {
             console.log(decrypt)
             console.log(encrp)
             if (value.email == email && decrypt == encrp) {
-                res.json({id:value._id})
+                res.json({ id: value._id })
             } else {
                 res.json({ message: "Wrong Credentials." });
             }
@@ -759,40 +788,90 @@ app.post("/api/delivery_login", async (req, res) => {
 app.post("/api/delivery_person/start", async (req, res) => {
     let { id } = req.body;
     if (id != "") {
-            try {
-                await delivery_model.findOneAndUpdate({ _id: id}, { $set: { "status": "active" }}).then(async()=>{
-                    res.json({message: "Active.", code:200})
-                }).catch(function(error){
-                    res.json({message: error})
-                }); 
-            } catch (error) {
-                res.json({message:error})
-            }
-        } else {
-            res.json({ message: "Failed." });
+        try {
+            await delivery_model.findOneAndUpdate({ _id: id }, { $set: { "status": "active" } }).then(async () => {
+                res.json({ message: "Active.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
         }
+    } else {
+        res.json({ message: "Failed." });
+    }
 })
 
 app.post("/api/delivery_person/stop", async (req, res) => {
     let { id } = req.body;
     if (id != "") {
-            try {
-                await delivery_model.findOneAndUpdate({ _id: id}, { $set: { "status": "inactive" }}).then(async()=>{
-                    res.json({message: "Inactive.", code:200})
-                }).catch(function(error){
-                    res.json({message: error})
-                });
-            } catch (error) {
-                res.json({message:error})
-            }
-        } else {
-            res.json({ message: "Failed." });
+        try {
+            await delivery_model.findOneAndUpdate({ _id: id }, { $set: { "status": "inactive" } }).then(async () => {
+                res.json({ message: "Inactive.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
         }
+    } else {
+        res.json({ message: "Failed." });
+    }
 })
 
 app.post('/api/delivery_person/status', async (req, res) => {
-    let {i} = req.body;
+    let { i } = req.body;
     let query = delivery_model.where({ "_id": i });
     let value = await query.findOne();
     res.json(value);
 })
+
+app.post("/api/restaurant/order/list", async (req, res) => {
+        let item = []
+        let qty = []
+        let item_data = []
+        let date = []
+        let status = []
+        let user = []
+        try {
+            let { id } = req.body;
+            let query = order_model.where({ "restaurant_id": id });
+            let value = await query.find();
+            item.push(value.map(e=> e.orders.map(val=> val.item_id)))
+            qty.push(value.map(e=> e.orders.map(val=> val.quantity)))
+            date.push(value.map(e=> e.createdAt))
+            status.push(value.map(e=> e.order_status))
+            user.push(value.map(e=> e.user_id))
+            console.log(date)
+            for (i in item){
+                let query = menu_model.where({ "_id": item[i] });
+                let value = await query.find();
+                item_data.push(value)
+            }
+            res.json({date, item, qty, item_data, status, user})
+        } catch (error) {
+            return res.json({ message: error.message })
+        }
+})
+
+app.post("/api/delivery/profile", async (req, res) => {
+    try {
+        let { id } = req.body;
+        let query = delivery_model.where({ "_id": id });
+        let value = await query.find();
+        res.json(value)
+    } catch (error) {
+        return res.json({ message: error.message })
+    }
+})
+
+app.get("/api/delivery/list", async (req, res) => {
+    try {
+        let value = await delivery_model.find();
+        res.json(value)
+    } catch (error) {
+        return res.json({ message: error.message })
+    }
+})
+
+

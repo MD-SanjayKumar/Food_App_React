@@ -20,7 +20,6 @@ function DeliveryLogin() {
   const navigate = useNavigate()
   const setCred = useDeliveryStore(state => state.setCredentials)
   const setId = useDeliveryStore(state => state.setDpId)
-  const setLog = useDeliveryStore(state => state.setLog)
   const [user, setUser] = useState({ email: "", password: "" })
 
   const handleInput = (e) => {
@@ -43,7 +42,6 @@ function DeliveryLogin() {
         setCred(email, password)
         setId(response.data.id)
         bake_cookie("delivery_person_id",response.data.id)
-        setLog(1)
         return navigate("/delivery-person")
       }
     }).catch(err => alert(err))

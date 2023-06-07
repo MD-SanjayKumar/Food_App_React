@@ -13,7 +13,12 @@ function Navbar() {
   const [status, setStatus] = useState('')
   const is_log = useDeliveryStore((e)=> e.is_logged)
   const setLog = useDeliveryStore(state => state.setLog)
+  const setFollowUp = useDeliveryStore((e)=> e.setFollowup)
+  const followUpslat = useDeliveryStore((e)=>e.followUpLat)
+  const followUpslong = useDeliveryStore((e)=>e.followUpLong)
   let coords = []
+  let lat;
+  let long;
 
   useEffect(()=>{
     getStatus(uid)
@@ -36,8 +41,14 @@ function Navbar() {
     navigator.geolocation.watchPosition(
         (data)=>{
             console.log(data)
+            setFollowUp(data.coords.latitude, data.coords.longitude)
             coords.push([data.coords.latitude, data.coords.longitude])
+            console.log(coords.slice(-1)[0])
+            let endCord = (coords.slice(-1)[0])
             console.log(coords)
+            lat = (endCord[0])
+            long = (endCord[1])
+            // console.log("--",followUpslat,followUpslong)
         },
         (err) =>{
             console.log(err)

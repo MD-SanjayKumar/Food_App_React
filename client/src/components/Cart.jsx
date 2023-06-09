@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     MDBBtn,
     MDBCard,
@@ -20,6 +20,8 @@ import Nav from "./Nav";
 import Footer from "./Footer";
 import { Button, Modal } from "react-bootstrap";
 import GetDeliveryLatLong from "./GetDeliveryLatLong";
+import { socket } from "./Socket";
+import uniqid from 'uniqid';
 
 export default function Cart() {
     const navigate = useNavigate()
@@ -30,7 +32,7 @@ export default function Cart() {
     const cartTotal = useCart((e => e.cartTotal))
     const dropCart = useCart((e => e.dropCart))
     const lat = useStore((e => e.d_lat))
-    const long = useStore((e => e.d_long))
+    const lg = useStore((e => e.d_long))
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -42,11 +44,16 @@ export default function Cart() {
         setTotal(total)
     }
 
+    useEffect(()=>{
+        console.log(cart)
+    })
+
     const handleCheckOut = async () => {
         if (full_address.length !== 0) {
             let email = read_cookie("email")
             let u_id = read_cookie("user_id")
-            console.log(email)
+            let long = Math.abs(parseFloat(lg) - 360);
+            console.log(cart)
             if (email != "" && u_id != "") {
                 axios.post('/api/user/order_data', {
                     u_id, cart, full_address, lat, long, total 
@@ -54,6 +61,19 @@ export default function Cart() {
                     console.log(response)
                     if (response.data.code === 200) {
                         dropCart()
+                        const deliveryData = {
+                            uniqueid: uniqid(),
+                            order_id: response.data.id, 
+                            uid: u_id,
+                            address: full_address,
+                            user_lat: lat,
+                            user_long: long,
+                            rid: cart[0].restaurant_id,
+                            cart: cart,
+                            cart_total: total,
+                            time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
+                        }
+                        socket.emit("send", deliveryData);
                         navigate("/")
                     } else {
                         alert("Error while placing order")
@@ -67,6 +87,22 @@ export default function Cart() {
             }
         } else {
             alert("Please enter your full address")
+        }
+    }
+
+
+    const send = async () => {
+        if (currentMessage !== "") {
+            const messageData = {
+                room: roomid,
+                user: uname,
+                message: currentMessage,
+                time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
+            }
+
+            await socket.emit("send_message", messageData);
+            setMessageList((list) => [...list, messageData])
+            setCurrentMessage("")
         }
     }
 

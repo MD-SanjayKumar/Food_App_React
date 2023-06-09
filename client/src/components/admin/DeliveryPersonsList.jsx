@@ -22,6 +22,20 @@ function DeliveryPersonsList() {
             })
     }
 
+    const handleDelete = (id) => {
+      axios.post('/api/person/delete', {
+          id
+      }).then((response) => {
+          if (response.data.code == 200) {
+              getData()
+              alert(`Person deleted Successfully.`)
+          }else{
+              alert("Something went wrong while deleting")
+          }
+          console.log(response)
+      }).catch(err => alert(err))
+  };
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
   return (
@@ -83,7 +97,7 @@ function DeliveryPersonsList() {
                                     <i className='fa fa-edit'></i>
                                 </button>
 
-                                <button className='bg-transparent border-0'>
+                                <button className='bg-transparent border-0' onClick={()=>{handleDelete(e._id)}}>
                                 <i className='fa-regular fa-trash-can'></i>
                                 </button>
                             </th>

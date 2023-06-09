@@ -3,9 +3,9 @@ import L from "leaflet";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
 import { useMap } from "react-leaflet";
-import mapIcon from "./../../images/map-marker.png";
-import restIcon from "./../../images/restaurant-marker.png";
-import driverIcon from "./../../images/delivery-icon.png";
+import mapIcon from "../../assets/map-marker.png";
+import restIcon from "../../assets/restaurant-marker.png";
+import driverIcon from "../../assets/delivery-icon.png";
 var routingControl = null;
 
 export default function Routing({ userCoords, restCoords, driverCoords }) {

@@ -30,7 +30,7 @@ function Sidebar() {
                 onClick={e => setActive(2)}>
                     <Link to="/delivery-person/orders" className='p-1 text-decoration-nonde text-white'>
                         <i className='bi bi-table me-3 fs-6'></i>
-                        <span className='fs-6'>Orders</span>
+                        <span className='fs-6'>Requests</span>
                     </Link>
                 </li>
 

@@ -101,7 +101,8 @@ function Nav() {
                                         <span>Cart</span>
                                     </Link>
                                 </li>
-                                {(log === 0) || (read_cookie("email").length === 0) ?
+                                {}
+                                {(log === 0) && (read_cookie("user_id").length === 0) ?
                                     <>
                                         <li className="nav-item">
                                             <Link className="nav-link" to="/user/login">

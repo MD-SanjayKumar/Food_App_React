@@ -1,7 +1,7 @@
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
-const socketIO = require('socket.io');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const app = express();
 const port = 9000;
@@ -236,12 +236,71 @@ const deliverySchema = new mongoose.Schema(
             type: String,
             require: true,
         },
+        current_status: {
+            type: String,
+            require: true,
+        },
     },
     {
         timestamps: true,
     }
 );
 const delivery_model = mongoose.model('delivery_data', deliverySchema)
+
+const DeliveryRequest = new mongoose.Schema(
+    {
+        requests: {
+            type: Object,
+            require: true,
+        },
+    },
+);
+const request_model = mongoose.model('request_model', DeliveryRequest)
+
+const DeliveryData = new mongoose.Schema(
+    {
+        d_id: {
+            type: String,
+            require: true,
+        },
+        order_id: {
+            type: String,
+            require: true,
+        },
+        user_id: {
+            type: String,
+            require: true,
+        },
+        restaurant_id: {
+            type: String,
+            require: true,
+        },
+        user_address: {
+            type: String,
+            require: true,
+        },
+        user_lat_long: {
+            type: Array,
+            require: true,
+        },
+        orders: {
+            type: Array,
+            require: true,
+        },
+        total_amount: {
+            type: String,
+            require: true,
+        },
+        status:{
+            type: String,
+            require: true,
+        }
+    },
+    {
+        timestamps: true,
+    }
+);
+const delivery_schema = mongoose.model('delivery_schema', DeliveryData)
 
 const server = http.createServer(app)
 app.use(cors())
@@ -250,15 +309,32 @@ app.get("/api/", (req, res) => {
     res.send("server running...");
 })
 
-const io = new socketIO.Server(server, {
+const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: "*",
         methods: ["GET", "POST"],
     }
 })
 
 io.on('connection', (socket) => {
     console.log(`new connection ${socket.id}`);
+    // socket.on("join", (data) => {
+    //     socket.join(data);
+    // })
+
+    socket.on("send", (deliveryData) => {
+        console.log("---", deliveryData)
+        request_model.create({
+            requests: deliveryData,
+        }).then((e) => { console.log("added") })
+            .catch((e) => { console.log(e) });
+
+        io.emit("receive", deliveryData)
+    })
+
+    socket.on("disconnect", () => {
+        console.log(`User disconnected ---${socket.id}`)
+    })
 });
 
 server.listen(port, () => {
@@ -602,32 +678,32 @@ app.post("/api/user/order_data", async (req, res) => {
     let { u_id, cart, full_address, lat, long, total } = req.body;
     let cart_item = [];
     let r_id = cart[0].restaurant_id;
-    for (i in cart) {
+    console.log("-----------------", cart);
+    cart.map((val) => {
         let obj = {
-            item_id: cart[i].item_id,
-            quantity: cart[i].quantity
+            item_id: val.item_id,
+            quantity: val.quantity
         }
         cart_item.push(obj)
-    }
-    let longitude = Math.abs(parseFloat(long) - 360);
-    if (longitude > 180) {
-        longitude = 360 - longitude;
-    }
-    console.log(cart_item)
+    })
+
+    console.log("cart_data", cart_item)
     try {
         var obj = {
             user_id: u_id,
             restaurant_id: r_id,
             user_address: full_address,
             user_lat_long: {
-                lat: lat, long: longitude
+                lat: lat, long: long
             },
             orders: cart_item,
             total_amount: total,
             order_status: "ongoing",
         };
-        order_model.create(obj).then(() => {
-            res.json({ message: "Order added.", code: 200 })
+        order_model.create(obj).then((objData) => {
+            setTimeout(() => {
+                res.json({ message: "Order added.", id:objData._id , code: 200 })
+            }, 500)
         })
     } catch (error) {
         console.log(error)
@@ -640,20 +716,42 @@ app.post("/api/user/myorder", async (req, res) => {
     let qty = []
     let item_data = []
     let date = []
+    let item_data_array_inner = [];
     try {
         let { user_id } = req.body;
-        let query = order_model.where({ "user_id": user_id });
-        let value = await query.find();
-        item.push(value.map(e=> e.orders.map(val=> val.item_id)))
-        qty.push(value.map(e=> e.orders.map(val=> val.quantity)))
-        date.push(value.map(e=> e.createdAt))
-        console.log(date)
-        for (i in item){
-            let query = menu_model.where({ "_id": item[i] });
-            let value = await query.find();
-            item_data.push(value)
-        }
-        res.json({date, item, qty, item_data})
+        // let query = order_model.where({ "user_id": user_id });
+        order_model.find({ "user_id": user_id }).then(async (value) => {
+            // console.log("--------", value)
+            // value.map(e => e.orders.map(val => console.log('--', val.item_id)))
+            item.push(value.map(e => e.orders.map(val => val.item_id)))
+            qty.push(value.map(e => e.orders.map(val => val.quantity)))
+            date.push(value.map(e => e.createdAt))
+            // console.log(date)
+            // console.log("item---------", item)
+            item[0].map(async (i) => {
+                // console.log(i);
+                i.map(async (j, key) => {
+                    // console.log(i);
+                    menu_model.findOne({ "_id": j }).then((menu) => {
+                        item_data_array_inner.push(menu)
+                        if (key == i.length - 1) {
+                            item_data.push(item_data_array_inner)
+                            item_data_array_inner = [];
+                        }
+                        // item_data_array_inner.push(menu)
+                        // console.log("innerrr",item_data_array_inner);
+                        // console.log(menu);
+                    })
+                    // setTimeout(() => {
+                    // console.log('itemm',item_data_array_inner);
+                    // },1000)
+                })
+            })
+            setTimeout(() => {
+                res.json({ value, qty, date, item_data, item })
+            }, 500)
+            // console.log(item_data)
+        })
     } catch (error) {
         return res.json({ message: error.message })
     }
@@ -733,7 +831,8 @@ app.post('/api/add_delivery_person', function (req, res) {
         phone: phone,
         address: address,
         aadhar_no: aadhar_no,
-        status: "inactive"
+        status: "inactive",
+        current_status: "idle"
     };
     if (name !== "" && address !== "" && email !== "" && phone !== "" && aadhar_no !== "") {
         var mailOptions = {
@@ -827,31 +926,41 @@ app.post('/api/delivery_person/status', async (req, res) => {
 })
 
 app.post("/api/restaurant/order/list", async (req, res) => {
-        let item = []
-        let qty = []
-        let item_data = []
-        let date = []
-        let status = []
-        let user = []
-        try {
-            let { id } = req.body;
-            let query = order_model.where({ "restaurant_id": id });
-            let value = await query.find();
-            item.push(value.map(e=> e.orders.map(val=> val.item_id)))
-            qty.push(value.map(e=> e.orders.map(val=> val.quantity)))
-            date.push(value.map(e=> e.createdAt))
-            status.push(value.map(e=> e.order_status))
-            user.push(value.map(e=> e.user_id))
-            console.log(date)
-            for (i in item){
-                let query = menu_model.where({ "_id": item[i] });
-                let value = await query.find();
-                item_data.push(value)
-            }
-            res.json({date, item, qty, item_data, status, user})
-        } catch (error) {
-            return res.json({ message: error.message })
-        }
+
+    let item = []
+    let qty = []
+    let item_data = []
+    let date = []
+    let status = []
+    let user = []
+    let item_data_array_inner = [];
+    try {
+        let { id } = req.body;
+        order_model.find({ "restaurant_id": id }).then(async (value) => {
+            item.push(value.map(e => e.orders.map(val => val.item_id)))
+            qty.push(value.map(e => e.orders.map(val => val.quantity)))
+            date.push(value.map(e => e.createdAt))
+            status.push(value.map(e => e.order_status))
+            user.push(value.map(e => e.user_id))
+            item[0].map(async (i) => {
+                i.map(async (j, key) => {
+                    menu_model.findOne({ "_id": j }).then((menu) => {
+                        item_data_array_inner.push(menu)
+                        if (key == i.length - 1) {
+                            item_data.push(item_data_array_inner)
+                            item_data_array_inner = [];
+                        }
+                    })
+                })
+            })
+            setTimeout(() => {
+                res.json({ date, item, qty, item_data, status, user })
+            }, 500)
+        })
+    } catch (error) {
+        return res.json({ message: error.message })
+    }
+
 })
 
 app.post("/api/delivery/profile", async (req, res) => {
@@ -874,4 +983,84 @@ app.get("/api/delivery/list", async (req, res) => {
     }
 })
 
+app.post('/api/person/delete', async (req, res) => {
+    let { id } = req.body;
+    try {
+        await delivery_model.deleteOne({ _id: id }).then(async () => {
+            res.json({ message: "Person deleted", code: 200 })
+        }).catch(function (error) {
+            res.json({ message: error })
+        });
+    } catch (error) {
+        res.json({ message: error })
+    }
+})
+
+app.get('/api/delivery_request', async (req, res) => {
+    let value = await request_model.find();
+    res.json(value);
+})
+
+app.post('/api/request/delete', async (req, res) => {
+    let { uniqueid } = req.body;
+    try {
+        await request_model.deleteOne({ "requests.uniqueid": uniqueid }).then(async () => {
+            res.json({ code: 200 })
+        }).catch(function (error) {
+            res.json({ message: error })
+        });
+    } catch (error) {
+        res.json({ message: error })
+    }
+})
+
+app.post('/api/request/accept', async (req, res) => {
+    let { d_id, order_id, uid, rid, address, user_lat, user_long, cart, cart_total } = req.body;
+    delivery_schema.create({
+        d_id: d_id,
+        order_id: order_id,
+        user_id: uid,
+        restaurant_id: rid,
+        user_address: address,
+        user_lat_long: [user_lat, user_long],
+        orders: cart,
+        total_amount: cart_total,
+        status: "incomplete"
+    }).then((e) => { console.log("added to delivery person") })
+        .catch((e) => { console.log(e) });
+})
+
+app.post("/api/delivery_person/status_change", async (req, res) => {
+    let { id } = req.body;
+    if (id != "") {
+        try {
+            await delivery_model.findOneAndUpdate({ _id: id }, { $set: { "current_status": "OnDelivery" } }).then(async () => {
+                res.json({ message: "Active.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
+        }
+    } else {
+        res.json({ message: "Failed." });
+    }
+})
+
+app.post("/api/delivery/status", async (req, res) => {
+    let { id } = req.body;
+    if (id != "") {
+        try {
+            await delivery_model.findOne({ _id: id }).then(async (response) => {
+                res.json({ data: response, code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
+        }
+    } else {
+        res.json({ message: "Failed." });
+    }
+})
 

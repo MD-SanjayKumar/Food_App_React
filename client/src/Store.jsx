@@ -80,6 +80,8 @@ const delivery = (set) => ({
   dp_id: null,
   is_logged: 0,
   status: "",
+  onDelivery: false,
+  ongoing_requests: 0,
   setCredentials: (e, p) => set(state => ({ email: e, password: p })),
   setDpId: (e) => set(state => ({ dp_id: e })),
   setLog: (e) => set(state => ({ is_logged: e })),
@@ -87,6 +89,14 @@ const delivery = (set) => ({
   followUpLat :null,
   followUpLong :null,
   setFollowup: (e, p) => set(state => ({ followUpLat: e, followUpLong: p })),
+  setDelivery: (e) => set(state => ({ onDelivery:e })),
+  setRequestCount: (e) => set(state => ({ ongoing_requests:e })),
+  UserLat :0,
+  UserLong :0,
+  setUserLocation: (lat, long) => set(state => ({ UserLat: lat, UserLong: long })),
+  RestaurantLat :0,
+  RestaurantLong :0,
+  setRestaurantLocation: (lat, long) => set(state => ({ RestaurantLat: lat, RestaurantLong: long })),
 })
 
 export const useDeliveryStore = create(delivery);

@@ -73,7 +73,8 @@ export default function Cart() {
                             cart_total: total,
                             time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
                         }
-                        socket.emit("send", deliveryData);
+                        socket.emit("send_restaurant", deliveryData);
+                        alert("We've received your order request.")
                         navigate("/")
                     } else {
                         alert("Error while placing order")
@@ -91,20 +92,20 @@ export default function Cart() {
     }
 
 
-    const send = async () => {
-        if (currentMessage !== "") {
-            const messageData = {
-                room: roomid,
-                user: uname,
-                message: currentMessage,
-                time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
-            }
+    // const send = async () => {
+    //     if (currentMessage !== "") {
+    //         const messageData = {
+    //             room: roomid,
+    //             user: uname,
+    //             message: currentMessage,
+    //             time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
+    //         }
 
-            await socket.emit("send_message", messageData);
-            setMessageList((list) => [...list, messageData])
-            setCurrentMessage("")
-        }
-    }
+    //         await socket.emit("send_message", messageData);
+    //         setMessageList((list) => [...list, messageData])
+    //         setCurrentMessage("")
+    //     }
+    // }
 
     return (
         <>

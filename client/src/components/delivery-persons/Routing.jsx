@@ -70,7 +70,7 @@ export default function Routing({ userCoords, restCoords, driverCoords }) {
     console.log(routingControl)
     setTimeout(() => {
         const time = document.querySelector('.leaflet-routing-alternatives-container h3')
-        console.log(time.innerHTML.split(','))
+        const split = (time.innerHTML.split(','))
     },1000)
     return () => routingControl;
   }, [driverCoords, map]);

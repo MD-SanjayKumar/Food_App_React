@@ -124,6 +124,7 @@ function MenuList() {
                                                                     <option value="name">Name</option>
                                                                     <option value="img"> Image link</option>
                                                                     <option value="price">Price</option>
+                                                                    <option value="avail">Availability</option>
                                                                 </select>
                                                             </div>
 

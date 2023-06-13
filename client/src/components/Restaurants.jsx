@@ -42,7 +42,7 @@ function Restaurants() {
               (
                 <>
                   <div className="col-md-12 col-lg-3 mb-4 mb-lg-0 ">
-                    <div className="card hover-shadow">
+                    <div className="card hover-shadow mb-3">
                       <Link to={`/restaurant/${data._id}/${data.name}/menu`}>
                         <img
                           src={data.image_url}

@@ -3,6 +3,8 @@ import { io } from 'socket.io-client';
 import DeliveryRouteMap from './DeliveryRouteMap';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 import axios from 'axios';
+import { useDeliveryStore } from '../../Store';
+import OngoingDelivery from './OngoingDelivery';
 
 const socket = io('http://localhost:9000',{
     autoConnect: false
@@ -11,6 +13,7 @@ const socket = io('http://localhost:9000',{
 function Home() {
     const d_id = read_cookie("delivery_person_id");
     const [status, setStatus]= useState("")
+    const onDelivery = useDeliveryStore((e)=> e.onDelivery)
 
     const [request, setRequest] = useState([])
     useEffect(() => {
@@ -30,7 +33,7 @@ function Home() {
 
     const getCurrentStatus= (id) =>{
         axios.post("/api/delivery/status", {id}).then((response)=>{
-            console.log(response.data)
+            console.log(response.data.data)
             setStatus(response.data.data.status)
         }).catch((err)=>{
             alert("Error")
@@ -41,7 +44,7 @@ function Home() {
     <div className='p-3 bg-light'>
         <div className='container-fluid'>
             <div className='row'>
-                <div className='col-12 col-sm-6 col-md-4 col-lg-3 p-3 bg-light'>
+                {/* <div className='col-12 col-sm-6 col-md-4 col-lg-3 p-3 bg-light'>
                     <div className='d-flex justify-content-around align-items-center 
                      p-4 bg-white boarder border-secondary shadow-sm'>
                         <i class="fa-solid fa-indian-rupee-sign fs-1 text-success"></i>
@@ -50,7 +53,7 @@ function Home() {
                             <h2>Total Earning</h2>
                         </div>
                     </div>
-                </div>
+                </div> */}
                 
                 <div className='col-12 col-sm-6 col-md-4 col-lg-3 p-3 bg-light'>
                     <div className='d-flex justify-content-around align-items-center 
@@ -58,7 +61,7 @@ function Home() {
                         <i className='fa-solid fa-person-biking fs-1 text-primary'></i>
                         <div>
                             <span>Delivery</span>
-                            <h2>No. of delivery</h2>
+                            <h2>0</h2>
                         </div>
                     </div>
                 </div>
@@ -77,10 +80,16 @@ function Home() {
             </div>
         </div>
         {status === "active" ?
+           onDelivery === true ?
         <div>
+        <OngoingDelivery/>
         <DeliveryRouteMap/>
         </div>
-        :<>Inactive</>}
+        :
+        <div className='text-center d-flex justify-content-center align-items-center ' style={{height:'23.3rem'}}>
+            <h1 className='ggl-font' >No Ongoing Orders</h1>
+        </div>
+        :<p>Inactive</p>}
     </div>
   )
 }

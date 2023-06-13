@@ -302,6 +302,16 @@ const DeliveryData = new mongoose.Schema(
 );
 const delivery_schema = mongoose.model('delivery_schema', DeliveryData)
 
+const RestaurantRequest = new mongoose.Schema(
+    {
+        requests: {
+            type: Object,
+            require: true,
+        },
+    },
+);
+const restaurant_request = mongoose.model('restaurant_request', RestaurantRequest)
+
 const server = http.createServer(app)
 app.use(cors())
 
@@ -321,6 +331,15 @@ io.on('connection', (socket) => {
     // socket.on("join", (data) => {
     //     socket.join(data);
     // })
+    socket.on("send_restaurant", (deliveryData) => {
+        console.log("--- Receive Request Called")
+        restaurant_request.create({
+            requests: deliveryData,
+        }).then((e) => { console.log("Added") })
+            .catch((e) => { console.log(e) });
+        
+        io.emit("receive_restaurant", deliveryData)
+    })
 
     socket.on("send", (deliveryData) => {
         console.log("---", deliveryData)
@@ -328,7 +347,7 @@ io.on('connection', (socket) => {
             requests: deliveryData,
         }).then((e) => { console.log("added") })
             .catch((e) => { console.log(e) });
-
+            
         io.emit("receive", deliveryData)
     })
 
@@ -698,7 +717,7 @@ app.post("/api/user/order_data", async (req, res) => {
             },
             orders: cart_item,
             total_amount: total,
-            order_status: "ongoing",
+            order_status: "pending",
         };
         order_model.create(obj).then((objData) => {
             setTimeout(() => {
@@ -716,6 +735,7 @@ app.post("/api/user/myorder", async (req, res) => {
     let qty = []
     let item_data = []
     let date = []
+    let status = []
     let item_data_array_inner = [];
     try {
         let { user_id } = req.body;
@@ -726,6 +746,7 @@ app.post("/api/user/myorder", async (req, res) => {
             item.push(value.map(e => e.orders.map(val => val.item_id)))
             qty.push(value.map(e => e.orders.map(val => val.quantity)))
             date.push(value.map(e => e.createdAt))
+            status.push(value.map(e => e.order_status))
             // console.log(date)
             // console.log("item---------", item)
             item[0].map(async (i) => {
@@ -748,7 +769,7 @@ app.post("/api/user/myorder", async (req, res) => {
                 })
             })
             setTimeout(() => {
-                res.json({ value, qty, date, item_data, item })
+                res.json({ value, qty, date, item_data, item, status })
             }, 500)
             // console.log(item_data)
         })
@@ -798,6 +819,17 @@ app.post('/api/item/update', async (req, res) => {
         try {
             await menu_model.findOneAndUpdate({ _id: id }, { $set: { "food_name": changeVal } }).then(async () => {
                 res.json({ message: "Name updated.", code: 200 })
+            }).catch(function (error) {
+                res.json({ message: error })
+            });
+        } catch (error) {
+            res.json({ message: error })
+        }
+    }
+    else if (current_option == 'avail') {
+        try {
+            await menu_model.findOneAndUpdate({ _id: id }, { $set: { "food_availability": changeVal } }).then(async () => {
+                res.json({ message: "Availability updated.", code: 200 })
             }).catch(function (error) {
                 res.json({ message: error })
             });
@@ -1064,3 +1096,121 @@ app.post("/api/delivery/status", async (req, res) => {
     }
 })
 
+
+ app.post("/api/delivery/current_status", async (req, res) => {
+    let { id } = req.body;
+    if (id != "") {
+        try {
+            await delivery_schema.find({ d_id: id}).then(async(val)=>{
+                let status_count = []
+                val.filter((e)=>e.status === "incomplete").map(v => status_count.push((v.status)))
+                // console.log(status_count.length)
+                res.json({ code: 200, incomplete: status_count.length })
+            })
+        } catch (error) {
+            // res.json({ message: error })
+            console.log(error)
+        }
+    } else {
+        // res.json({ message: "Failed." });
+        console.log("Invalid ID");
+    }
+})
+
+
+app.post("/api/delivery/set_complete", async (req, res) => {
+    let { id } = req.body;
+    if (id != "") {
+        try {
+            await delivery_schema.find({ d_id: id}).then(async(val)=>{
+                val.filter((e)=>e.status === "incomplete").map(async(v) => {
+                    await delivery_model.findOneAndUpdate({ _id: id},{ $set: { "current_status": "idle" }})
+                    await delivery_schema.findOneAndUpdate({ _id: v._id},{ $set: { "status": "complete" }})
+                    await order_model.findOneAndUpdate({_id: v.order_id},{ $set: { "order_status": "delivered" }})
+                })
+                res.json({ code: 200 })
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    } else {
+        // res.json({ message: "Failed." });
+        console.log("Invalid ID");
+    }
+})
+
+app.post("/api/delivery/ongoing", async (req, res) => {
+    let { id } = req.body;
+    if (id != "") {
+        try {
+            await delivery_schema.find({ d_id: id}).then(async(val)=>{
+                val.filter((e)=>e.status === "incomplete").map(async(v) => {
+                    restaurant_model.findOne({_id: v.restaurant_id}).then((res_response)=>{
+                        user_model.findOne({_id: v.user_id}).then((user_res)=>{
+                            delivery_schema.findOne({_id: v._id}).then((response)=>{
+                                res.json({ code: 200, 
+                                    _id: response._id,
+                                    del_id: response.d_id,
+                                    order_id:response.order_id,
+                                    user_id:response.user_id,
+                                    username: user_res.name,
+                                    restaurant_id:response.restaurant_id,
+                                    res_location: res_response.lat_long,
+                                    res_address: res_response.address,
+                                    res_name: res_response.name,
+                                    user_address:response.user_address,
+                                    user_lat_long:response.user_lat_long,
+                                    orders:response.orders,
+                                    total_amount:response.total_amount,
+                                    createdAt:response.createdAt,
+                                    updatedAt:response.updatedAt
+                                })
+                            })
+                        })
+                    })
+                    
+                })
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    } else {
+        res.json({ message: "Failed." })
+    }
+})
+
+app.post('/api/restaurant_request/delete', async (req, res) => {
+    let { uniqueid } = req.body;
+    try {
+        await restaurant_request.deleteOne({ "requests.uniqueid": uniqueid }).then(async () => {
+            res.json({ code: 200 })
+        }).catch(function (error) {
+            res.json({ message: error })
+        });
+    } catch (error) {
+        res.json({ message: error })
+    }
+})
+
+app.get('/api/restaurant_request', async (req, res) => {
+    let value = await restaurant_request.find();
+    res.json(value);
+})
+
+app.post("/api/delivery/change_status", async (req, res) => {
+    let { d_id } = req.body;
+    if (d_id != "") {
+        try {
+            await delivery_schema.find({ d_id: d_id}).then(async(val)=>{
+                val.filter((e)=>e.status === "incomplete").map(async(v) => {
+                    await order_model.findOneAndUpdate({_id: v.order_id},{ $set: { "order_status": "in progress" }})
+                })
+                res.json({ code: 200 })
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    } else {
+        res.json({ message: "Failed." });
+    }
+})

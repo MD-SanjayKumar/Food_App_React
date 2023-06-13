@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Gasoek+One&family=Kanit:wght@400;700&family=Piazzolla:wght@200;300;400;900&display=swap');
+
+.ggl-font{
+  font-family: 'Kanit', sans-serif;
+}
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */

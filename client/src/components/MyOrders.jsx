@@ -26,6 +26,7 @@ export default function MyOrders() {
 	const [dates, setDates] = useState([]);
 	const [quantity, setQuantity] = useState([]);
 	const [item, setItem] = useState([]);
+	const [status, setStatus] = useState([]);
 
 
 	useEffect(() => {
@@ -68,6 +69,14 @@ export default function MyOrders() {
 						// console.log(num)
 					}
 				}
+
+				if (response.data != null) {
+					if (Object.keys(response.data).length > 0 && response.data["status"] != undefined) {
+						setStatus(response.data["status"][0])
+						// console.log(quantity)
+					}
+				}
+
 			}).catch(err => {
 				alert(err)
 				console.log(err)
@@ -96,8 +105,10 @@ export default function MyOrders() {
 
 									return (
 										<React.Fragment key={j}>
-											<p>{dates[0][j]}</p>
-											{console.log(item.length)}
+											<b>No. - {j+1}</b> 
+											<p>Date & Time : {dates[0][j]}</p>
+											{/* {console.log(item.length)} */}
+											<div className=''>Order Status: <span className='text-secondary'>{status[j]}</span></div>
 											{quantity ? quantity[j].map((q,k) => {
 												return (
 													<React.Fragment key={k}>
@@ -117,6 +128,7 @@ export default function MyOrders() {
 																</div>
 															</div>
 														</div>
+														<hr/>
 													</React.Fragment>
 												)
 											}) :

@@ -17,6 +17,7 @@ import { useRestaurantStore, useStore } from "../Store";
 import { useCart } from "../Store";
 import Footer from "./Footer";
 import Nav from "./Nav";
+import Item from "./Item";
 
 export default function Items() {
   const [items, setItems] = useState([])
@@ -74,25 +75,26 @@ export default function Items() {
   }
 
   const handleCartAdd = async (rid, i_id, name, price, image, qty) => {
+    console.log(i_id)
     let is_contain = cart.find((item) => item.restaurant_id === rid)
-    if (cart.length === 0 ){
-      addCart({ restaurant_id: rid, item_id: i_id,fname: name, fprice: price, fimg: image, quantity: qty })
-    } else if (is_contain){
+    if (cart.length === 0) {
+      addCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty })
+    } else if (is_contain) {
       const cartItem = cart.find((item) => item.fname === name);
-        cartItem ?
-          updateCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty })
-          :
-          addCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty,  })
-    }else{
+      cartItem ?
+        updateCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty })
+        :
+        addCart({ restaurant_id: rid, item_id: i_id, fname: name, fprice: price, fimg: image, quantity: qty, })
+    } else {
       alert("Your cart contains items from other restaurant.")
     }
 
-        // const cartItem = cart.find((item) => item.fname === name);
-        // cartItem ?
-        //   updateCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
-        //   :
-        //   addCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
-  
+    // const cartItem = cart.find((item) => item.fname === name);
+    // cartItem ?
+    //   updateCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
+    //   :
+    //   addCart({ restaurant_id: rid, fname: name, fprice: price, fimg: image, quantity: qty })
+
   }
   console.log(cart)
 
@@ -138,7 +140,7 @@ export default function Items() {
                   </div>
                   <div>
                     <p className="mb-1" style={{ fontSize: '12px' }}>{desc}</p>
-                    <p style={{ fontSize: '12px' }}>{location}, {km.toFixed(2)}km</p>
+                    <p style={{ fontSize: '12px' }}>{location}, {km.toFixed(1)}km</p>
                   </div>
                   <hr />
                   <div>
@@ -159,7 +161,8 @@ export default function Items() {
                     items.filter((data) => data.rid === params.id).map((filteredData) => {
                       return (
                         <>
-                          <div className="card shadow-0 border rounded-3 mx-5 mb-1">
+                          <Item res_id={params.id} filteredData={filteredData}/>
+                          {/* <div className="card shadow-0 border rounded-3 mx-5 mb-1">
                             <div className="card-body">
                               <div className="row">
                                 <div className="col-md-3 col-lg-2 mb-lg-0">
@@ -186,7 +189,7 @@ export default function Items() {
                                   </div>
 
                                   <p className=" mb-4 mb-md-0" style={{ fontSize: '10px' }}>
-                                    This is description
+                                    {filteredData.food_quantity}
                                   </p>
                                 </div>
                                 <div className="col-md-3 col-lg-2  border-sm-start-none border-start">
@@ -205,7 +208,11 @@ export default function Items() {
                                         </button>
                                       </div>
                                       <div className="d-flex flex-row align-items-center justify-content-center">
-                                        <button className="btn btn-primary py-2" onClick={() => handleCartAdd(params.id, filteredData._id, filteredData.food_name, filteredData.food_price, filteredData.food_image, itemCount)}>Add</button>
+                                        <button className="btn btn-primary py-2" onClick={() => {
+                                          console.log(filteredData._id)
+                                          handleCartAdd(params.id, filteredData._id, filteredData.food_name, filteredData.food_price, filteredData.food_image, itemCount)
+                                        }
+                                        }>Add</button>
                                       </div>
                                     </>
                                     : <>
@@ -217,7 +224,7 @@ export default function Items() {
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
                         </>
                       )
                     })

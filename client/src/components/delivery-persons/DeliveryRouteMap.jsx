@@ -5,14 +5,18 @@ import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
 import mapMarker from "../../assets/map-marker.png";
 import Routing from "./Routing";
+import { useDeliveryStore } from "../../Store";
 let coords = []
 
 const DeliveryRouteMap = () => {
     const [lat, setLat] = useState();
     const [long, setLong]= useState();
+    const userLat = useDeliveryStore((e)=>e.UserLat)
+    const userLong = useDeliveryStore((e)=>e.UserLong)
+    const resLat = useDeliveryStore((e)=>e.RestaurantLat)
+    const resLong = useDeliveryStore((e)=>e.RestaurantLong)
 
     useEffect(()=>{
-        console.log(';logg');
         // getCurrentMovements()
         navigator.geolocation.watchPosition(
             (data)=>{
@@ -72,7 +76,7 @@ const icon = new L.icon({
             {/* <Marker position={[20, 30]} icon={icon}> */}
             {/* </Marker> */}
             {console.log(lat)}
-                {lat && long && <Routing userCoords={[23.06, 72.5]} restCoords={[23.1, 72.3]} driverCoords={[lat, long]} /> }
+                {lat && long && <Routing userCoords={[userLat, userLong]} restCoords={[resLat, Math.abs(parseFloat(resLong) - 360)]} driverCoords={[lat, long]} /> }
         </MapContainer>
     </div>;
 };

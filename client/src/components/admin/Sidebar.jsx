@@ -70,13 +70,13 @@ function Sidebar() {
                 </li> */}
                 
                 {/* order */}
-                <li className={active ===4 ? ' active nav-item p-2 my-1': 'nav-item p-2 my-1'}
+                {/* <li className={active ===4 ? ' active nav-item p-2 my-1': 'nav-item p-2 my-1'}
                 onClick={e => setActive(4)}>
                     <Link to="/admin/orders" className='p-1 text-decoration-nonde text-white'>
                         <i className='bi bi-table me-3 fs-6'></i>
                         <span className='fs-6'>Orders</span>
                     </Link>
-                </li>
+                </li> */}
 
                 {/* offers */}
                 {/* <li className={active ===5 ? ' active nav-item p-2 my-1': 'nav-item p-2 my-1'}

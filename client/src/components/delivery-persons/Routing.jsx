@@ -6,9 +6,12 @@ import { useMap } from "react-leaflet";
 import mapIcon from "../../assets/map-marker.png";
 import restIcon from "../../assets/restaurant-marker.png";
 import driverIcon from "../../assets/delivery-icon.png";
+import { useDeliveryStore } from "../../Store";
 var routingControl = null;
 
+
 export default function Routing({ userCoords, restCoords, driverCoords }) {
+  const setTimeDistance = useDeliveryStore((val)=> val.setTimeKm)
   const RouterEle = document.querySelector(".leaflet-routing-container");
   //   const [routingControl, setRoutingControl] = useState(null);
   const map = useMap();
@@ -71,6 +74,8 @@ export default function Routing({ userCoords, restCoords, driverCoords }) {
     setTimeout(() => {
         const time = document.querySelector('.leaflet-routing-alternatives-container h3')
         const split = (time.innerHTML.split(','))
+        setTimeDistance(split)
+        console.log(split)
     },1000)
     return () => routingControl;
   }, [driverCoords, map]);

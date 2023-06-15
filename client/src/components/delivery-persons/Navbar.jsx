@@ -19,17 +19,33 @@ function Navbar() {
   const onDelivery = useDeliveryStore((e) => e.setDelivery)
   const on_delivery = useDeliveryStore((e) => e.onDelivery)
 
-  let coords = []
-  let lat;
-  let long;
+  const [lat, setLat] = useState();
+  const [long, setLong]= useState();
+  const setFollow = useDeliveryStore((e)=>e.setFup)
 
   useEffect(() => {
     getStatus(uid)
     onDeliveryStatus(uid)
-    if (status === 'inactive') {
-      getCurrentMovements()
+    if (status !== 'inactive') {
+      navigator.geolocation.watchPosition(
+        (data)=>{
+            console.log(data)
+            // setFollowUp(data.coords.latitude, data.coords.longitude)
+            // coords.push([data.coords.latitude, data.coords.longitude])
+            console.log(data.coords.latitude)
+            console.log(data.coords.longitude)
+            setLat(data.coords.latitude)
+            setLong(data.coords.longitude)
+
+        },
+        (err) =>{
+            console.log(err)
+        },{
+            enableHighAccuracy: true
+        })
     }
-  })
+    setFollow(lat, long)
+  },[lat, long])
 
   const getStatus = (i) => {
     axios.post("/api/delivery_person/status", { i })
@@ -53,30 +69,8 @@ function Navbar() {
   }
 
 
-
-  const getCurrentMovements = () => {
-    navigator.geolocation.watchPosition(
-      (data) => {
-        console.log(data)
-        setFollowUp(data.coords.latitude, data.coords.longitude)
-        coords.push([data.coords.latitude, data.coords.longitude])
-        console.log(coords.slice(-1)[0])
-        let endCord = (coords.slice(-1)[0])
-        console.log(coords)
-        lat = (endCord[0])
-        long = (endCord[1])
-        // console.log("--",followUpslat,followUpslong)
-      },
-      (err) => {
-        console.log(err)
-      }, {
-      enableHighAccuracy: true
-    }
-    )
-  }
-
   const handleStart = (id) => {
-    getCurrentMovements()
+    // getCurrentMovements()
     axios.post("/api/delivery_person/start", { id })
       .then((res) => {
         if (res.data.code == 200) {

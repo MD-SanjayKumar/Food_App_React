@@ -8,6 +8,8 @@ export default function OngoingDelivery(){
     const [ongoing, setOngoing] = useState("");
     const setUserLocation = useDeliveryStore((state)=>state.setUserLocation)
     const setRestaurantLocation = useDeliveryStore((state)=>state.setRestaurantLocation)
+    const timeDistance = useDeliveryStore((val)=> val.time_km)
+    // const fare = (7* timeDistance[0].slice(0,4)).toFixed(0)
 
 
     useEffect(()=>{
@@ -15,13 +17,14 @@ export default function OngoingDelivery(){
     },[])
 
     const getOngoingOrder=()=>{
-        axios.post("/api/delivery/ongoing",{id}).then((response)=>{
+        console.log("Id",id)
+        axios.post("/api/delivery/ongoing_data",{id}).then((response)=>{
             setOngoing(response.data)
             setUserLocation(response.data.user_lat_long[0],response.data.user_lat_long[1])
             setRestaurantLocation(response.data.res_location[0].lat,response.data.res_location[0].long)
             console.log("RES_________-",response.data.res_location[0].lat,response.data.res_location[0].long)
         }).catch((err)=>{
-            console.log(err)
+            console.log("error",err)
         })
     }
 
@@ -47,12 +50,14 @@ export default function OngoingDelivery(){
                     <div className='row border-bottom d-flex align-items-end' style={{ fontSize: '13px' }}>
                         <div className='col-6 me-auto'>
                             <div className='row'>
-                                <div className='col'>Total distance <span style={{ fontWeight: 'bold' }}>12km</span></div>
-                                <div className='col'>Estimate time <span style={{ fontWeight: 'bold' }}>30min</span></div>
+                                <div className='col'>Total distance <span style={{ fontWeight: 'bold' }}>{timeDistance? timeDistance[0] : 0}</span></div>
+                                <div className='col'>Estimate time <span style={{ fontWeight: 'bold' }}>{timeDistance? timeDistance[1] : 0}</span></div>
                             </div>
                         </div>
-                        <div className='col-2 ms-auto'>Fare <span style={{ fontWeight: 'bold' }}>₹130</span></div>
+                        {/* timeDistance[0].slice(0,4)).toFixed(0) */}
+                        <div className='col-2 ms-auto'>Cart Total <span style={{ fontWeight: 'bold' }}>{ongoing.total_amount} Rs</span></div>
                     </div>
+                    {/* <div className='col-2 ms-auto align-items-end' style={{ fontSize: '13px' }}>Fare <span style={{ fontWeight: 'bold' }}>{fare} Rs</span></div> */}
                 </div>
             </div>
         </div>

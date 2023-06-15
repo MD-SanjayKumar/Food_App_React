@@ -15,12 +15,15 @@ import {
 import { useRestaurantStore } from '../../Store';
 import axios from 'axios';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
+import BubbleLoadingAnimation from '../BubbleLoadingAnimation';
 
 function RestaurantLogin() {
   const navigate = useNavigate()
   const setCred = useRestaurantStore(state => state.setCredentials)
   const setRid = useRestaurantStore(state => state.setRid)
   const [user, setUser] = useState({ email: "", password: "" })
+  const [loading, setLoading] = useState(false)
+  
 
   const handleInput = (e) => {
     let name, value;
@@ -32,6 +35,7 @@ function RestaurantLogin() {
 
   const SendData = async (e) => {
     e.preventDefault()
+    setLoading(true)
 
     const { email, password } = user;
     axios.post('/api/restaurant_login', {
@@ -39,16 +43,21 @@ function RestaurantLogin() {
     }).then((response) => {
       console.log(response)
       if (response.status === 200) {
+        setLoading(false)
         setCred(email, password)
         setRid(response.data.id)
         bake_cookie("restaurant_id",response.data.id)
         return navigate("/restaurant_dash")
+      }else{
+        setLoading(false)
       }
     }).catch(err => alert(err))
   }
 
 
   return (
+    <>
+    {loading && <BubbleLoadingAnimation/>}
     <div>
       <form method="post" onSubmit={SendData}>
         <MDBContainer fluid>
@@ -96,6 +105,7 @@ function RestaurantLogin() {
         </MDBContainer>
       </form>
     </div>
+    </>
   )
 }
 

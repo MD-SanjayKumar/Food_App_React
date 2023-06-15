@@ -32,10 +32,10 @@ function Restaurants() {
   return (
     <div>
       <section style={{ backgroundColor: '#eee' }}>
-        <div className="container py-5">
-          <h4 className="text-center mb-5">
+        <div className="container pb-5">
+          <h3 className="text-center mb-5 ggl-font">
             <strong>Restaurant List</strong>
-          </h4>
+          </h3>
           <div className="row">
             {restaurant ?
               restaurant.map((data) =>
@@ -63,22 +63,22 @@ function Restaurants() {
                             { }
                           </div>
 
-                          <div className="d-flex justify-content-between mb-3">
+                          <div className="d-flex justify-content-between mb-3 text-dark">
                             <h5 className="mb-0">{data.name}</h5>
                             {/* <h5 className="text-dark mb-0">$8</h5> */}
                           </div>
 
                           <div className="d-flex justify-content-between mb-2">
                             <p className="text-muted mb-0">
-                              Available <span className="fw-bold">{}</span>
+                              {data.description} <span className="fw-bold">{}</span>
                             </p>
-                            <div className="ms-auto text-warning">
+                            {/* <div className="ms-auto text-warning">
                               <i className="fa fa-star"></i>
                               <i className="fa fa-star"></i>
                               <i className="fa fa-star"></i>
                               <i className="fa fa-star"></i>
                               <i className="fa fa-star"></i>
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                       </Link>

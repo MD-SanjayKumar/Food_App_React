@@ -55,17 +55,20 @@ function Item(props) {
             <div className="col-md-6 col-lg-8 ">
               <h5>{props.filteredData.food_name}</h5>
               <div className="d-flex flex-row">
-                <div className="text-warning mb-1 me-2">
+              <p className=" mb-4 mb-md-0 me-3">
+               Category: {props.filteredData.food_category}
+              </p>
+                {/* <div className="text-warning mb-1 me-2">
                   <i className="fa fa-star"></i>
                   <i className="fa fa-star"></i>
                   <i className="fa fa-star"></i>
                   <i className="fa fa-star"></i>
                   <i className="fa fa-star-half"></i>
-                </div>
+                </div> */}
                 {props.filteredData.is_veg ? <span><img src="https://n3.sdlcdn.com/imgs/d/g/8/Veg_symbol_svg-f30b6.png" style={{ width: '30px' }} /></span> : <span><img src="https://clipground.com/images/non-veg-symbol-png-5.png" style={{ width: '25px' }} /></span>}
               </div>
 
-              <p className=" mb-4 mb-md-0" style={{ fontSize: '10px' }}>
+              <p className=" mb-4 mb-md-0" style={{ fontSize: '13px' }}>
                 {props.filteredData.food_quantity}
               </p>
             </div>
@@ -94,7 +97,7 @@ function Item(props) {
                 </>
                 : <>
                   <div className="d-flex flex-row align-items-center justify-content-center">
-                    Item Unavailable
+                    <p style={{fontSize: '15px'}}>Item Unavailable</p>
                   </div>
                 </>
               }

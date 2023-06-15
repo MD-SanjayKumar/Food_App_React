@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 import { useRestaurantStore } from '../../Store';
+import { MDBBtn } from 'mdb-react-ui-kit';
 
 function Navbar() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li className="nav-item border rounded">
+            {/* <li className="nav-item border rounded">
               <a className="nav-link text-white" aria-current="page" href="#">
                 <i className='bi bi-search me-1'></i>Search
               </a>
@@ -41,12 +42,14 @@ function Navbar() {
               <a className="nav-link text-white" aria-current="page" href="#">
                 Account
               </a>
-            </li>
+            </li> */}
     
             <li className="nav-item border rounded">
-              <Link className="nav-link text-white" aria-current="page" onClick={()=>handleLogout()}>
+              <MDBBtn color="black" className="btn btn-outline-light" onClick={()=>{
+                handleLogout()
+              }}>
                 Logout
-              </Link>
+              </MDBBtn>
             </li>
           </ul>
         </div>

@@ -24,6 +24,7 @@ function RestaurantReq() {
             socket.off('receive_restaurant')
         }
     }, [socket])
+
     
     console.log(requestList)
 

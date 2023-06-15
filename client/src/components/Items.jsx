@@ -135,17 +135,17 @@ export default function Items() {
               <div className="col-md-12 col-xl-10">
                 <div className="mx-5 p-1">
                   <div className="d-flex justify-content-between">
-                    <p className="fs-5 mb-1">{params.name}</p>
-                    <i className="fa fa-star text-warning">4.5</i>
+                    <p className="fs-3 mb-1">{params.name}</p>
+                    {/* <i className="fa fa-star text-warning">4.5</i> */}
                   </div>
                   <div>
-                    <p className="mb-1" style={{ fontSize: '12px' }}>{desc}</p>
-                    <p style={{ fontSize: '12px' }}>{location}, {km.toFixed(1)}km</p>
+                    <p className="mb-1" style={{ fontSize: '13px' }}>{desc}</p>
+                    <p style={{ fontSize: '13px' }}>{location}, {km.toFixed(1)}km</p>
                   </div>
                   <hr />
                   <div>
-                    <i className="fa fa-stopwatch fs-4 pe-2"></i>
-                    <span className="fs-5">{time.toFixed(2)} MINS AWAY</span>
+                    <i className="fa fa-stopwatch fs-5 pe-2"></i>
+                    <span className="fs-6">{time.toFixed(2)} MINS AWAY</span>
                   </div>
                   {/* <div className="mb-4">
                     <input type="checkbox" />

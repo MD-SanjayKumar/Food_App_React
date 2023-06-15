@@ -11,6 +11,7 @@ import { Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
+import BubbleLoadingAnimation from './BubbleLoadingAnimation';
 
 export default function Add_product() {
 
@@ -18,6 +19,7 @@ export default function Add_product() {
     const [product, setProduct] = useState({ food_name: "", food_category: "", food_price: "", food_image: "", food_availability: undefined, is_veg: undefined, food_quantity:"" })
     // const [avail, setAvail] = useState(null);
     let rid = read_cookie("restaurant_id");
+    const [loading, setLoading] = useState(false)
 
     const handleInput = (e) => {
         let name, value;
@@ -29,16 +31,19 @@ export default function Add_product() {
 
     const AddData = async (e) => {
         e.preventDefault()
+        setLoading(true)
 
         const { food_name, food_category, food_price, food_image, food_availability, is_veg, food_quantity } = product;
         Axios.post('/api/add_product', {
             rid, food_name, food_category, food_price, food_image, food_availability, is_veg, food_quantity
         }).then((response) => {
             if (response.data.code == 200){
+                setLoading(false)
                 navigate("/restaurant_dash")
                 console.log(response)
             }
             else{
+                setLoading(false)
                 alert("Something went wrong while adding new item.")
             }
         }).catch(err => {
@@ -49,6 +54,8 @@ export default function Add_product() {
     }
 
     return (
+        <>
+          {loading && <BubbleLoadingAnimation/>}
         <div style={{ marginTop: '40px', width: '50%' }}>
             <h3>Add Item</h3>
             <form method='post' onSubmit={AddData}>
@@ -78,5 +85,6 @@ export default function Add_product() {
                 </div>
             </form>
         </div>
+        </>
     );
 }

@@ -32,8 +32,9 @@ function Otp_log() {
             otp
         }).then((response) => {
             console.log(response)
-            if (response.data.code == 200) {
+            if (response.data.code === 200) {
                 bake_cookie("email", email)
+                bake_cookie("user_id", email)
                 setLog(1)
                 return navigate("/")
             }

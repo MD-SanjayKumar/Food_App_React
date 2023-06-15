@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
 import { useDeliveryStore } from '../../Store';
+import * as geolib from 'geolib';
 
 const socket = io('http://localhost:9000', {
     autoConnect: false
@@ -17,6 +18,11 @@ function Orders() {
     const [restaurant, setRestaurant] = useState([]);
     const onDelivery = useDeliveryStore((e) => e.onDelivery)
     const req_count = useDeliveryStore((e) => e.setRequestCount)
+    const [range, setRange] = useState("");
+    const [res_latlong, setResLatlong] = useState('');
+    const [list, setList] = useState([]);
+    const getStoreLat = useDeliveryStore((e) => e.fupLat)
+    const getStoreLong = useDeliveryStore((e) => e.fupLong)
 
     useEffect(() => {
         getRestaurants()
@@ -35,9 +41,20 @@ function Orders() {
     }, [socket])
     console.log(onDelivery)
 
+    const requsetRange = (lat1, long1) => {
+        let distance = geolib.getPreciseDistance(
+            { lat: lat1, lng: long1 },
+            { lat: getStoreLat !== undefined ? getStoreLat : 23.0, lng: getStoreLong !== undefined ? getStoreLong : 73.0 },
+            99
+        );
+        return (distance / 1000).toFixed(1)
+    }
+
+
+
     const getRestaurants = () => {
         axios.get("/api/restaurant_data").then((response) => {
-            console.log(response.data);
+            console.log("---", response.data)
             setRestaurant(response.data)
             // data.map((e)=>{setRequestList((list) => [...list, e.requests])})
             // setRequestList(data.map((e)=>{e.requests}))
@@ -101,9 +118,7 @@ function Orders() {
         })
     }
 
-
-
-    //   console.log(requestList)
+    console.log("restaurants ---", restaurant)
     return (
         <div>
             <Navbar />
@@ -111,51 +126,107 @@ function Orders() {
                 <div className='row bg-light justify-content-center py-5'>
                     {
                         requestList ? requestList.map((data, i) => {
+                            const filteredArray = restaurant.filter((val) => val._id === data.rid);
                             return (
-
-                                <>
-                                    <div className='col-lg-6 border rounded bg-white m-2 w-75'>
-                                        <div className='row'>
-                                            <p>Request time: {data.time}</p>
-                                            <div className='col-6 py-2'>
-                                                <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>PICK UP</p>
-                                                <p className='mb-0 fs-5'>Restaurant ID:{data.rid}</p>
-                                                <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>Address will be here</p>
-                                            </div>
-                                            <div className='col-6 py-2'>
-                                                <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>DROP OFF</p>
-                                                <p className='mb-0 fs-5'>User ID: {data.uid}</p>
-                                                <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>{data.address}</p>
-                                            </div>
-                                        </div>
-                                        <hr className='my-1' />
-                                        <div className='row border-bottom d-flex align-items-end' style={{ fontSize: '13px' }}>
-                                            <div className='col-6 me-auto'>
-                                                <div className='row'>
-                                                    <div className='col'>Total distance <span style={{ fontWeight: 'bold' }}>12km</span></div>
-                                                    <div className='col'>Estimate time <span style={{ fontWeight: 'bold' }}>30min</span></div>
+                                filteredArray.length > 0 ?
+                                filteredArray.map((vs) => {
+                                    const distance = requsetRange(vs.lat_long[0].lat, vs.lat_long[0].long)
+                                    return (
+                                        distance <= 5 ?
+                                            <>
+                                                <div className='col-lg-6 border rounded bg-white m-2 w-75'>
+                                                    <div className='row'>
+                                                        <p>Request time: {data.time}</p>
+                                                        <div className='col-6 py-2'>
+                                                            <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>PICK UP</p>
+                                                            <p className='mb-0 fs-5'>Restaurant ID:{data.rid}</p>
+                                                            <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>{ vs.address}</p>
+                                                        </div>
+                                                        <div className='col-6 py-2'>
+                                                            <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>DROP OFF</p>
+                                                            <p className='mb-0 fs-5'>User ID: {data.uid}</p>
+                                                            <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>{data.address}</p>
+                                                        </div>
+                                                    </div>
+                                                    <hr className='my-1' />
+                                                    <div className='row border-bottom d-flex align-items-end' style={{ fontSize: '13px' }}>
+                                                        <div className='col-6 me-auto'>
+                                                            <div className='row'>
+                                                                <div className='col'>Total distance <span style={{ fontWeight: 'bold' }}>12km</span></div>
+                                                                <div className='col'>Estimate time <span style={{ fontWeight: 'bold' }}>30min</span></div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='col-2 ms-auto'>Fare <span style={{ fontWeight: 'bold' }}>₹130</span></div>
+                                                    </div>
+                                                    {/* <hr className='m-0' /> */}
+                                                    <div className='row'>
+                                                        <div className='d-flex justify-content-end p-2'>
+                                                            {/* <button className='btn btn-outline-danger  m-2'>Reject</button> */}
+                                                            <button className='btn btn-success m-2' onClick={() => {
+                                                                handleAccept(data.order_id, data.uid, data.rid, data.address, data.user_lat, data.user_long, data.cart, data.cart_total)
+                                                                handleDeleteReq(data.uniqueid)
+                                                                handleStatus(d_id)
+                                                                getRequests()
+                                                                handleCurrentStatus()
+                                                            }}>Accept</button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className='col-2 ms-auto'>Fare <span style={{ fontWeight: 'bold' }}>₹130</span></div>
-                                        </div>
-                                        {/* <hr className='m-0' /> */}
-                                        <div className='row'>
-                                            <div className='d-flex justify-content-end p-2'>
-                                                {/* <button className='btn btn-outline-danger  m-2'>Reject</button> */}
-                                                <button className='btn btn-success m-2' onClick={() => {
-                                                    handleAccept(data.order_id, data.uid, data.rid, data.address, data.user_lat, data.user_long, data.cart, data.cart_total)
-                                                    handleDeleteReq(data.uniqueid)
-                                                    handleStatus(d_id)
-                                                    getRequests()
-                                                    handleCurrentStatus()
-                                                }}>Accept</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            )
-                        }) : 
-                        <></>
+                                            </>
+                                            : <></>
+                                    )
+
+
+                                }) : <>No Data Found</>
+                                )
+
+
+                            // return (
+
+                            //     <>
+                            //         <div className='col-lg-6 border rounded bg-white m-2 w-75'>
+                            //             <div className='row'>
+                            //                 <p>Request time: {data.time}</p>
+                            //                 <div className='col-6 py-2'>
+                            //                     <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>PICK UP</p>
+                            //                     <p className='mb-0 fs-5'>Restaurant ID:{data.rid}</p>
+                            //                     <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>{}</p>
+                            //                 </div>
+                            //                 <div className='col-6 py-2'>
+                            //                     <p className='mb-0 text-secondary' style={{ fontSize: '12px', fontWeight: 'bold' }}>DROP OFF</p>
+                            //                     <p className='mb-0 fs-5'>User ID: {data.uid}</p>
+                            //                     <p className='mb-0 text-truncate' style={{ fontSize: '12px' }}>{data.address}</p>
+                            //                 </div>
+                            //             </div>
+                            //             <hr className='my-1' />
+                            //             <div className='row border-bottom d-flex align-items-end' style={{ fontSize: '13px' }}>
+                            //                 <div className='col-6 me-auto'>
+                            //                     <div className='row'>
+                            //                         <div className='col'>Total distance <span style={{ fontWeight: 'bold' }}>12km</span></div>
+                            //                         <div className='col'>Estimate time <span style={{ fontWeight: 'bold' }}>30min</span></div>
+                            //                     </div>
+                            //                 </div>
+                            //                 <div className='col-2 ms-auto'>Fare <span style={{ fontWeight: 'bold' }}>₹130</span></div>
+                            //             </div>
+                            //             {/* <hr className='m-0' /> */}
+                            //             <div className='row'>
+                            //                 <div className='d-flex justify-content-end p-2'>
+                            //                     {/* <button className='btn btn-outline-danger  m-2'>Reject</button> */}
+                            //                     <button className='btn btn-success m-2' onClick={() => {
+                            //                         handleAccept(data.order_id, data.uid, data.rid, data.address, data.user_lat, data.user_long, data.cart, data.cart_total)
+                            //                         handleDeleteReq(data.uniqueid)
+                            //                         handleStatus(d_id)
+                            //                         getRequests()
+                            //                         handleCurrentStatus()
+                            //                     }}>Accept</button>
+                            //                 </div>
+                            //             </div>
+                            //         </div>
+                            //     </>
+                            // )
+
+                        }) :
+                            <></>
                     }
 
                 </div>

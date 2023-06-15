@@ -52,7 +52,7 @@ function Profile() {
                         <p className='mb-1'>{e.address}</p>
                     </div>
                 </div>
-                <button className='btn btn-primary'>Edit</button>
+                {/* <button className='btn btn-primary'>Edit</button> */}
             </div>
                )
             }):<>No user found</> }

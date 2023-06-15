@@ -12,6 +12,7 @@ import Axios from 'axios';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import GetLatLong from './admin/GetLatLong';
 import { useAdminStore } from '../Store';
+import BubbleLoadingAnimation from './BubbleLoadingAnimation';
 
 export default function Add_restaurant() {
 
@@ -27,6 +28,7 @@ export default function Add_restaurant() {
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    const [loading, setLoading] = useState(false)
 
     const handleInput = (e) => {
         let name, value;
@@ -38,6 +40,7 @@ export default function Add_restaurant() {
 
     const AddData = async (e) => {
         e.preventDefault()
+        setLoading(true)
 
         const { name, address, email, phone, gst_in, pan_no, description, image_url } = restaurant;
         Axios.post('/api/add_restaurant', {
@@ -45,8 +48,10 @@ export default function Add_restaurant() {
         }).then((response) => {
             console.log(response)
             if (response.data.code === 200) {
+                setLoading(false)
                 return navigate("/admin")
             }else{
+                setLoading(false)
                 alert("Something went wrong while adding new restaurant.")
             }
         }).catch(err => alert(err))
@@ -63,6 +68,8 @@ export default function Add_restaurant() {
     }
 
     return (
+        <>
+        {loading && <BubbleLoadingAnimation/>}
         <div style={{ marginTop: '40px', width: '50%' }}>
             <Modal show={show} onHide={handleClose} animation={false}>
                 <Modal.Header closeButton>
@@ -100,5 +107,6 @@ export default function Add_restaurant() {
             </form>
             
         </div>
+        </>
     );
 }

@@ -182,7 +182,7 @@ const OrdersSchema = new mongoose.Schema(
         order_status: {
             type: String,
             require: true,
-        }
+        },
     },
     {
         timestamps: true,
@@ -291,7 +291,7 @@ const DeliveryData = new mongoose.Schema(
             type: String,
             require: true,
         },
-        status:{
+        status: {
             type: String,
             require: true,
         }
@@ -337,7 +337,7 @@ io.on('connection', (socket) => {
             requests: deliveryData,
         }).then((e) => { console.log("Added") })
             .catch((e) => { console.log(e) });
-        
+
         io.emit("receive_restaurant", deliveryData)
     })
 
@@ -347,7 +347,7 @@ io.on('connection', (socket) => {
             requests: deliveryData,
         }).then((e) => { console.log("added") })
             .catch((e) => { console.log(e) });
-            
+
         io.emit("receive", deliveryData)
     })
 
@@ -721,7 +721,7 @@ app.post("/api/user/order_data", async (req, res) => {
         };
         order_model.create(obj).then((objData) => {
             setTimeout(() => {
-                res.json({ message: "Order added.", id:objData._id , code: 200 })
+                res.json({ message: "Order added.", id: objData._id, code: 200 })
             }, 500)
         })
     } catch (error) {
@@ -1097,13 +1097,13 @@ app.post("/api/delivery/status", async (req, res) => {
 })
 
 
- app.post("/api/delivery/current_status", async (req, res) => {
+app.post("/api/delivery/current_status", async (req, res) => {
     let { id } = req.body;
     if (id != "") {
         try {
-            await delivery_schema.find({ d_id: id}).then(async(val)=>{
+            await delivery_schema.find({ d_id: id }).then(async (val) => {
                 let status_count = []
-                val.filter((e)=>e.status === "incomplete").map(v => status_count.push((v.status)))
+                val.filter((e) => e.status === "incomplete").map(v => status_count.push((v.status)))
                 // console.log(status_count.length)
                 res.json({ code: 200, incomplete: status_count.length })
             })
@@ -1122,11 +1122,11 @@ app.post("/api/delivery/set_complete", async (req, res) => {
     let { id } = req.body;
     if (id != "") {
         try {
-            await delivery_schema.find({ d_id: id}).then(async(val)=>{
-                val.filter((e)=>e.status === "incomplete").map(async(v) => {
-                    await delivery_model.findOneAndUpdate({ _id: id},{ $set: { "current_status": "idle" }})
-                    await delivery_schema.findOneAndUpdate({ _id: v._id},{ $set: { "status": "complete" }})
-                    await order_model.findOneAndUpdate({_id: v.order_id},{ $set: { "order_status": "delivered" }})
+            await delivery_schema.find({ d_id: id }).then(async (val) => {
+                val.filter((e) => e.status === "incomplete").map(async (v) => {
+                    await delivery_model.findOneAndUpdate({ _id: id }, { $set: { "current_status": "idle" } })
+                    await delivery_schema.findOneAndUpdate({ _id: v._id }, { $set: { "status": "complete" } })
+                    await order_model.findOneAndUpdate({ _id: v.order_id }, { $set: { "order_status": "delivered" } })
                 })
                 res.json({ code: 200 })
             })
@@ -1139,40 +1139,43 @@ app.post("/api/delivery/set_complete", async (req, res) => {
     }
 })
 
-app.post("/api/delivery/ongoing", async (req, res) => {
+app.post("/api/delivery/ongoing_data", async (req, res) => {
     let { id } = req.body;
+    console.log(id)
     if (id != "") {
         try {
-            await delivery_schema.find({ d_id: id}).then(async(val)=>{
-                val.filter((e)=>e.status === "incomplete").map(async(v) => {
-                    restaurant_model.findOne({_id: v.restaurant_id}).then((res_response)=>{
-                        user_model.findOne({_id: v.user_id}).then((user_res)=>{
-                            delivery_schema.findOne({_id: v._id}).then((response)=>{
-                                res.json({ code: 200, 
+            await delivery_schema.find({ d_id: id }).then(async (val) => {
+                val.filter((e) => e.status === "incomplete").map(async (v) => {
+                    restaurant_model.findOne({ _id: v.restaurant_id }).then((res_response) => {
+                      user_model.findOne({ email: v.user_id }).then((user_res) => {
+                            delivery_schema.findOne({ _id: v._id }).then((response) => {
+                                res.json({
+                                    code: 200,
                                     _id: response._id,
                                     del_id: response.d_id,
-                                    order_id:response.order_id,
-                                    user_id:response.user_id,
+                                    order_id: response.order_id,
+                                    user_id: response.user_id,
                                     username: user_res.name,
-                                    restaurant_id:response.restaurant_id,
+                                    // username: response.user_id,
+                                    restaurant_id: response.restaurant_id,
                                     res_location: res_response.lat_long,
                                     res_address: res_response.address,
                                     res_name: res_response.name,
-                                    user_address:response.user_address,
-                                    user_lat_long:response.user_lat_long,
-                                    orders:response.orders,
-                                    total_amount:response.total_amount,
-                                    createdAt:response.createdAt,
-                                    updatedAt:response.updatedAt
+                                    user_address: response.user_address,
+                                    user_lat_long: response.user_lat_long,
+                                    orders: response.orders,
+                                    total_amount: response.total_amount,
+                                    createdAt: response.createdAt,
+                                    updatedAt: response.updatedAt
                                 })
                             })
-                        })
+                      })
                     })
-                    
+
                 })
             })
         } catch (error) {
-            console.log(error)
+            console.log("Error :",error)
         }
     } else {
         res.json({ message: "Failed." })
@@ -1201,9 +1204,9 @@ app.post("/api/delivery/change_status", async (req, res) => {
     let { d_id } = req.body;
     if (d_id != "") {
         try {
-            await delivery_schema.find({ d_id: d_id}).then(async(val)=>{
-                val.filter((e)=>e.status === "incomplete").map(async(v) => {
-                    await order_model.findOneAndUpdate({_id: v.order_id},{ $set: { "order_status": "in progress" }})
+            await delivery_schema.find({ d_id: d_id }).then(async (val) => {
+                val.filter((e) => e.status === "incomplete").map(async (v) => {
+                    await order_model.findOneAndUpdate({ _id: v.order_id }, { $set: { "order_status": "in progress" } })
                 })
                 res.json({ code: 200 })
             })

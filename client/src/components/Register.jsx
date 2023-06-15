@@ -18,10 +18,12 @@ import {
     from 'mdb-react-ui-kit';
 import Nav from "./Nav"
 import Footer from "./Footer"
+import BubbleLoadingAnimation from "./BubbleLoadingAnimation"
 
 function Register() {
     const navigate = useNavigate()
     const setCred = useStore(state => state.setCredentials)
+    const [loading, setLoading] = useState(false)
     const [user, setUser] = useState({ email: "", password: "", cpassword: "", name: "", phone: "" })
 
     const handleInput = (e) => {
@@ -33,19 +35,22 @@ function Register() {
 
     const SendData = async (e) => {
         e.preventDefault()
-
+        setLoading(true)
         const { email, password, cpassword, name, phone } = user;
         Axios.post('/api/user_reg', {
             email, password, cpassword, name, phone
         }).then((response) => {
             console.log(response)
             if (response.data.code === 200) {
+                setLoading(false)
                 navigate("/user/reg/otp")
             }
             else if (response.data.code === 201) {
+                setLoading(false)
                 alert("User already exists")
             }
             else {
+                setLoading(false)
                 alert("Please enter valid credentials.")
             }
         }).catch(err => alert(err.response.data.message))
@@ -53,6 +58,7 @@ function Register() {
 
     return (
         <>
+        {loading && <BubbleLoadingAnimation/>}
             <div>
                 <Nav/>
             </div>
@@ -91,7 +97,7 @@ function Register() {
                                         <MDBInput label='Confirm password' id='form4' type='password' name="cpassword" value={user.cpassword} onChange={handleInput}/>
                                     </div>
 
-                                    <MDBBtn className='mb-4' size='lg' rounded color='dark' onClick={SendData}>Register</MDBBtn>
+                                    <MDBBtn className='mb-4 px-3 py-1' size='md' rounded color='dark' onClick={SendData}>Register</MDBBtn>
 
                                 </MDBCol>
 

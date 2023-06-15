@@ -20,11 +20,11 @@ const DeliveryRouteMap = () => {
         // getCurrentMovements()
         navigator.geolocation.watchPosition(
             (data)=>{
-                console.log(data)
+                console.log("data",data)
                 // setFollowUp(data.coords.latitude, data.coords.longitude)
                 coords.push([data.coords.latitude, data.coords.longitude])
-                console.log(data.coords.latitude)
-                console.log(data.coords.longitude)
+                console.log("lat",data.coords.latitude)
+                console.log("long",data.coords.longitude)
                 setLat(data.coords.latitude)
                 setLong(data.coords.longitude)
                 // console.log("--",followUpslat,followUpslong)
@@ -36,6 +36,8 @@ const DeliveryRouteMap = () => {
             }
         )
     },[lat, long])
+
+    
 //     const APP_KEY = "fTbxeEhl0jfa2vOn5uKnoB5ihcGwSUAf"
 //     const mapElement = useRef()
 //     // const [map, setMap] = useState({})

@@ -18,12 +18,14 @@ import {
 import Nav from "./Nav"
 import Footer from "./Footer"
 import { bake_cookie, read_cookie, delete_cookie } from 'sfcookies';
+import BubbleLoadingAnimation from "./BubbleLoadingAnimation"
 
 function Login() {
     const navigate = useNavigate()
     const setCred = useStore(state => state.setCredentials)
     const setUid = useStore(state => state.setUid)
     const [user, setUser] = useState({ email: "", password: "" })
+    const [loading, setLoading] = useState(false)
 
     const handleInput = (e) => {
         let name, value;
@@ -35,18 +37,20 @@ function Login() {
 
     const SendData = async (e) => {
         e.preventDefault()
-
+        setLoading(true)
         const { email, password } = user;
         Axios.post('/api/user_lg', {
             email, password
         }).then((response) => {
             console.log(response)
             if (response.data.code === 200) {
+                setLoading(false)
                 setUid(response.data.user_id)
                 bake_cookie("user_id", response.data.user_id)
                 setCred(email, password)
                 return navigate("/user/log/otp")
             }else{
+                setLoading(false)
                 alert("invalid credentials")
             }
         }).catch(err => alert(err.response.data.message))
@@ -54,6 +58,7 @@ function Login() {
 
     return (
         <>
+        {loading && <BubbleLoadingAnimation/>}
         <div>
                 <Nav/>
             </div>
@@ -90,7 +95,7 @@ function Login() {
                                         <MDBInput label="Password" id="form3" type="password" name="password" value={user.password} onChange={handleInput} />
                                     </div>
 
-                                    <MDBBtn className="mb-4" size="lg" rounded color='dark'>
+                                    <MDBBtn className="mb-4 px-3 py-1" size="md" rounded color='dark'>
                                         Login
                                     </MDBBtn>
                                     <p className="text-center">Not a member? <Link to='/user/reg'>Register</Link></p>

@@ -97,6 +97,11 @@ const delivery = (set) => ({
   RestaurantLat :0,
   RestaurantLong :0,
   setRestaurantLocation: (lat, long) => set(state => ({ RestaurantLat: lat, RestaurantLong: long })),
+  time_km : undefined,
+  setTimeKm: (on_go) => set(state => ({ time_km: on_go })),
+  fupLat :null,
+  fupLong :null,
+  setFup: (e, p) => set(state => ({ fupLat: e, fupLong: p })),
 })
 
 export const useDeliveryStore = create(delivery);
